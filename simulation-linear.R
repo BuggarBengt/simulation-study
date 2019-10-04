@@ -1,7 +1,7 @@
 library(sensmediation)
 
 calc.nde.linear = function(z.from, z.to, x, b, t) { #explanation in causal inference /Vanderweele
-  return((t[1] + t[4]*b[1] + t[4]*b[2]*z.from + t[4]*b[3]*x)*(z.to-z.from))
+  return((t[2] + t[4]*b[1] + t[4]*b[2]*z.from + t[4]*b[3]*x)*(z.to-z.from))
 }
 
 calc.nie.linear = function(z.from, z.to, b, t) {
@@ -19,15 +19,12 @@ CI.nie.upper <- rep(NA, S) # Upper bound of 95% CI of NIE
 CI.nde.lower <- rep(NA, S) # Lower bound of 95% CI of NDE
 CI.nde.upper <- rep(NA, S) # Upper bound of 95% CI of NDE
 
-nie.S <- numeric(S) # True NIE 
+Z.coefs = c(a0 = -1, a1 = 0.01) 
+M.coefs = c(b0 = 20, b1 = 40, b2 = 1, b3 = 0)
+Y.coefs = c(t0 = 10, t1 = 30, t2 = 2, t3=0, t4 = 2, t5 = 0, t6 = 0, t7 = 0)
+
+nie.S <- calc.nie.linear(z.from = 0, z.to = 1, b = M.coefs, t = Y.coefs) # True NIE 
 nde.S <- numeric(S) # True NDE
-
-Z.coefs = c(a0 = 10, a1 = 0.3) 
-M.coefs = c(b0 = 10, b1 = 1.4, b2 = 0.011, b3 = 0)
-Y.coefs = c(t0 = 10, t1 = 0.5, t2 = 0.15, t3=0.0, t4 = 0.035, t5 = 0, t6 = 0, t7 = 0)
-
-#true.NIE = M.coefs["b1"]*Y.coefs["t2"] + M.coefs["b1"]*Y.coefs["t3"] 
-#true.NDE = Y.coefs["t1"]+Y.coefs["t3"]
 
 # Simulations:
 set.seed(4352)
@@ -47,8 +44,7 @@ for(i in 1:S){
   M <- M.coefs["b0"] + M.coefs["b1"]*Z + M.coefs["b2"]*X + m.epsilon
   Y <- Y.coefs["t0"] + Y.coefs["t1"]*Z + Y.coefs["t2"]*M + Y.coefs["t3"]*Z*M + Y.coefs["t4"]*X + y.epsilon
   
-  nie.S[i] = calc.nie.linear(z.from = 0, z.to = 1, b = M.coefs, t = Y.coefs)
-  nde.S[i] = calc.nde.linear(z.from = 0, z.to = 1, b = M.coefs, t = Y.coefs, x = X)
+  nde.S[i] = mean(calc.nde.linear(z.from = 0, z.to = 1, b = M.coefs, t = Y.coefs, x = X))
   
   # Estimated models (y.model misspecified without Z-M correlation):
   m.model <- glm(M ~ Z + X) 
