@@ -1,2 +1,2 @@
-# simulation-study
+# Simulation study
 Simulation study.  Sensmediation
