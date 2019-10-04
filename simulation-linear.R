@@ -8,7 +8,7 @@ calc.nie.linear = function(z.from, z.to, b, t) {
   return((t[3]*b[2] + t[4]*b[2]*z.to)*(z.to-z.from))
 }
 
-n <- 1000 # Size of data
+n <- 1000 # Size of data 
 S <- 1000 # Number of replicates
 
 # Storage of results
