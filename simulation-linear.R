@@ -1,4 +1,5 @@
 library(sensmediation)
+library(ggplot2)
 
 calc.nde.linear = function(z.from, z.to, x, b, t) {
   return((t[2] + t[4]*b[1] + t[4]*b[2]*z.from + t[4]*b[3]*x)*(z.to-z.from))
@@ -64,9 +65,30 @@ runSimulation = function(S, n, exposure.coefs, mediator.coefs, outcome.coefs, ex
 }
 
 set.seed(4235)
-result = runSimulation(S = 1000, n = 1000, exposure.coefs = c(a0 = -3.416096, a1 = 0.036231), 
-              mediator.coefs = c(b0 = 10, b1 = 1.4, b2 = 0.011, b3 = 0), 
-              outcome.coefs = c(t0 = 10, t1 = 0.5, t2 = 0.15, t3=0.0, t4 = 0.035, t5 = 0, t6 = 0, t7 = 0))
+corr.coef = seq(0, 5, 0.01)
+to.plot = matrix(nrow = length(corr.coef), ncol = 3) #preallocate vector to plot
+colnames(to.plot) = c("nde.bias", "nie.bias","interaction.coefficient")
+result = vector(mode = "list", length = length(corr.coef))  #preallocate result list
+for (i in 1:length(result)) {
+  result[[i]] = runSimulation(S = 100, n = 1000, exposure.coefs = c(a0 = -3.416096, a1 = 0.036231), 
+                         mediator.coefs = c(b0 = 10, b1 = 1.4, b2 = 0.011, b3 = 0), 
+                         outcome.coefs = c(t0 = 10, t1 = 0.5, t2 = 0.15, t3=corr.coef[i], t4 = 0.035, t5 = 0, t6 = 0, t7 = 0))
+  to.plot[i, 1] = mean(result[[i]]$est.nde) - mean(result[[i]]$true.nde)
+  to.plot[i, 2] = mean(result[[i]]$est.nie) - result[[i]]$true.nie
+  to.plot[i, 3] = corr.coef[i]
+}
+ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nde.bias)) +
+  geom_point() +
+  geom_line()
+
+
+result[[1]]$
+
+
+result2 = runSimulation(S = 1000, n = 1000, exposure.coefs = c(a0 = -3.416096, a1 = 0.036231), 
+                        mediator.coefs = c(b0 = 10, b1 = 1.4, b2 = 0.011, b3 = 0), 
+                        outcome.coefs = c(t0 = 10, t1 = 0.5, t2 = 0.15, t3=0.0, t4 = 0.035, t5 = 0, t6 = 0, t7 = 0))
+
 
 mean(ifelse(result$true.nie < result$CI.nie.upper & result$true.nie > result$CI.nie.lower, 1, 0))
 mean(ifelse(result$true.nde < result$CI.nde.upper & result$true.nde > result$CI.nde.lower, 1, 0))
