@@ -65,24 +65,43 @@ runSimulation = function(S, n, exposure.coefs, mediator.coefs, outcome.coefs, ex
 }
 
 set.seed(4235)
-corr.coef = seq(0, 5, 0.01)
-to.plot = matrix(nrow = length(corr.coef), ncol = 3) #preallocate vector to plot
-colnames(to.plot) = c("nde.bias", "nie.bias","interaction.coefficient")
+corr.coef = seq(0, 5, 0.1)
+to.plot = matrix(nrow = length(corr.coef), ncol = 7) #preallocate vector to plot
+colnames(to.plot) = c("interaction.coefficient", "nde.bias", "nie.bias", "nde.percent.bias", "nie.percent.bias","nde.coverage", "nie.coverage")
 result = vector(mode = "list", length = length(corr.coef))  #preallocate result list
-for (i in 1:length(result)) {
+for (i in 1:length(result)) { # run simulations while increasing interaction effect
   result[[i]] = runSimulation(S = 100, n = 1000, exposure.coefs = c(a0 = -3.416096, a1 = 0.036231), 
                          mediator.coefs = c(b0 = 10, b1 = 1.4, b2 = 0.011, b3 = 0), 
                          outcome.coefs = c(t0 = 10, t1 = 0.5, t2 = 0.15, t3=corr.coef[i], t4 = 0.035, t5 = 0, t6 = 0, t7 = 0))
-  to.plot[i, 1] = mean(result[[i]]$est.nde) - mean(result[[i]]$true.nde)
-  to.plot[i, 2] = mean(result[[i]]$est.nie) - result[[i]]$true.nie
-  to.plot[i, 3] = corr.coef[i]
+  to.plot[i, 1] = corr.coef[i]
+  to.plot[i, 2] = mean(result[[i]]$est.nde) - mean(result[[i]]$true.nde)
+  to.plot[i, 3] = mean(result[[i]]$est.nie) - result[[i]]$true.nie
+  to.plot[i, 4] = (mean(result[[i]]$est.nde) - mean(result[[i]]$true.nde))/mean(result[[i]]$true.nde)
+  to.plot[i, 5] = (mean(result[[i]]$est.nie) - result[[i]]$true.nie)/result[[i]]$true.nie
+  to.plot[i, 6] = mean(ifelse(result[[i]]$true.nde < result[[i]]$CI.nde.upper & result[[i]]$true.nde > result[[i]]$CI.nde.lower, 1, 0))
+  to.plot[i, 7] = mean(ifelse(result[[i]]$true.nie < result[[i]]$CI.nie.upper & result[[i]]$true.nie > result[[i]]$CI.nie.lower, 1, 0))
 }
 ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nde.bias)) +
   geom_point() +
   geom_line()
+ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.bias)) +
+  geom_point() +
+  geom_line()
+ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nde.percent.bias)) +
+  geom_point() +
+  geom_line()
+ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.percent.bias)) +
+  geom_point() +
+  geom_line()
+ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage)) +
+  geom_point() +
+  geom_line()
+ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage)) +
+  geom_point() +
+  geom_line()
 
 
-result[[1]]$
+result[[i]]$
 
 
 result2 = runSimulation(S = 1000, n = 1000, exposure.coefs = c(a0 = -3.416096, a1 = 0.036231), 
