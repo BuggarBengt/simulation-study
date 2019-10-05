@@ -1,6 +1,7 @@
 library(sensmediation)
 library(ggplot2)
 
+
 calc.nde.linear = function(z.from, z.to, x, b, t) {
   return((t[2] + t[4]*b[1] + t[4]*b[2]*z.from + t[4]*b[3]*x)*(z.to-z.from))
 }
@@ -101,13 +102,9 @@ ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage)) +
   geom_line()
 
 
-result[[i]]$
-
-
 result2 = runSimulation(S = 1000, n = 1000, exposure.coefs = c(a0 = -3.416096, a1 = 0.036231), 
                         mediator.coefs = c(b0 = 10, b1 = 1.4, b2 = 0.011, b3 = 0), 
                         outcome.coefs = c(t0 = 10, t1 = 0.5, t2 = 0.15, t3=0.0, t4 = 0.035, t5 = 0, t6 = 0, t7 = 0))
-
 
 mean(ifelse(result$true.nie < result$CI.nie.upper & result$true.nie > result$CI.nie.lower, 1, 0))
 mean(ifelse(result$true.nde < result$CI.nde.upper & result$true.nde > result$CI.nde.lower, 1, 0))
