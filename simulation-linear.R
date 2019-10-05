@@ -1,6 +1,6 @@
 library(sensmediation)
 
-calc.nde.linear = function(z.from, z.to, x, b, t) { #explanation in causal inference /Vanderweele
+calc.nde.linear = function(z.from, z.to, x, b, t) { # explanation in causal inference /Vanderweele
   return((t[2] + t[4]*b[1] + t[4]*b[2]*z.from + t[4]*b[3]*x)*(z.to-z.from))
 }
 
@@ -21,7 +21,7 @@ CI.nde.upper <- rep(NA, S) # Upper bound of 95% CI of NDE
 
 Z.coefs = c(a0 = -1, a1 = 0.01) 
 M.coefs = c(b0 = 20, b1 = 40, b2 = 1, b3 = 0)
-Y.coefs = c(t0 = 10, t1 = 30, t2 = 2, t3=0, t4 = 2, t5 = 0, t6 = 0, t7 = 0)
+Y.coefs = c(t0 = 10, t1 = 30, t2 = 2, t3=2, t4 = 2, t5 = 0, t6 = 0, t7 = 0)
 
 nie.S <- calc.nie.linear(z.from = 0, z.to = 1, b = M.coefs, t = Y.coefs) # True NIE 
 nde.S <- numeric(S) # True NDE
