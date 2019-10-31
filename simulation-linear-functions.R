@@ -16,7 +16,7 @@ runSimulation = function(S, n, exposure.coefs, mediator.coefs, outcome.coefs, ex
   CI.nie.upper <- rep(NA, S) # Upper bound of 95% CI of NIE
   CI.nde.lower <- rep(NA, S) # Lower bound of 95% CI of NDE
   CI.nde.upper <- rep(NA, S) # Upper bound of 95% CI of NDE
-  nde.S <- numeric(S) # True NDE
+  true.NDE <- numeric(S) # True NDE
   nie.S = calc.nie.linear(z.from = 0, z.to = 1, b = mediator.coefs, t = outcome.coefs) # True NIE 
   
   for(i in 1:S){
@@ -35,7 +35,7 @@ runSimulation = function(S, n, exposure.coefs, mediator.coefs, outcome.coefs, ex
     M <- mediator.coefs["b0"] + mediator.coefs["b1"]*Z + mediator.coefs["b2"]*X + m.epsilon
     Y <- outcome.coefs["t0"] + outcome.coefs["t1"]*Z + outcome.coefs["t2"]*M + outcome.coefs["t3"]*Z*M + outcome.coefs["t4"]*X + y.epsilon
     
-    nde.S[i] = mean(calc.nde.linear(z.from = 0, z.to = 1, b = mediator.coefs, t = outcome.coefs, x = X))
+    true.NDE[i] = mean(calc.nde.linear(z.from = 0, z.to = 1, b = mediator.coefs, t = outcome.coefs, x = X))
     
     # Estimated models (y.model misspecified without Z-M correlation):
     m.model <- glm(M ~ Z + X) 
@@ -54,7 +54,7 @@ runSimulation = function(S, n, exposure.coefs, mediator.coefs, outcome.coefs, ex
   }  
   
   return(list(true.nie = nie.S,
-              true.nde = nde.S,
+              true.nde = true.NDE,
               est.nie = effekter.nie, 
               est.nde = effekter.nde, 
               CI.nie.lower = CI.nie.lower,
