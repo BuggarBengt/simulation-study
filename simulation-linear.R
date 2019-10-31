@@ -1,5 +1,4 @@
 library(ggplot2)
-library(mediation)
 
 set.seed(4235)
 corr.coef = seq(0, 1, 0.02)
@@ -11,14 +10,14 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                n = 1000,
                                covariate.models = c("gamma"),
                                covariate.parameters = list(c(8, 4.5)),
-                               true.exposure.coefs = c(I = -3.416096, X = 0.036231),
+                               true.exposure.coefs =  c(I = 0.35512882, X = 0.00206941),
                                true.mediator.coefs = c(I = 50, Z = 5, X = 0.11, ZX = 0),
                                true.outcome.coefs = c(I = 50, Z = 5, M = 5, ZM = corr.coef[i], X = 0.35),
                                outcome.mediator.type = "linear",
                                sd.exposure = 1,
                                sd.mediator = 1,
                                sd.outcome = 1,
-                               misspecified.mediator.formula = "Y~Z+X",
+                               misspecified.mediator.formula = "M~Z+X",
                                misspecified.outcome.formula = "Y~Z+M+X")
   to.plot[i, 1] = corr.coef[i]
   to.plot[i, 2] = mean(result[[i]]$true.nde)
@@ -39,17 +38,17 @@ to.plot.read = read.table("toplot.txt") # read results
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
-  xlab('correalation.coef') +
+  xlab('correlation.coef') +
   ylab('est.effect')
 ggplot() + 
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
-  xlab('correalation.coef') +
+  xlab('correlation.coef') +
   ylab('est.effect')
 ggplot() + 
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
-  xlab('correalation.coef') +
+  xlab('correlation.coef') +
   ylab('est.effect')
 
 ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde)) +
@@ -94,5 +93,15 @@ NIE.string = paste("True NIE: ", round(mean(result$true.nie), 4), " Est. NIE: ",
 NDE.string = paste("True NDE: ", round(mean(result$true.nde), 4), " Est. NDE: ", round(mean(result$est.nde), digits = 4), " Avg. CI width: (", round(mean(result$CI.nde.lower), digits = 4), "; ", round(mean(result$CI.nde.upper), digits = 4), ")", sep = "") 
 NIE.string
 NDE.string
+
+
+
+# NOT RUN {
+data("MIsim", package = "rsimsum")
+s <- simsum(data = MIsim, estvarname = "b", true = 0.5, se = "se", methodvar = "method", ref = "CC")
+# If 'ref' is not specified, the reference method is inferred
+s <- simsum(data = MIsim, estvarname = "b", true = 0.5, se = "se", methodvar = "method")
+# }
+
 
 
