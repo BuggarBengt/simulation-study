@@ -1,7 +1,7 @@
 library(ggplot2)
 
 set.seed(4235)
-corr.coef = seq(0, 1, 0.02)
+corr.coef = seq(-0.5,0.5, 0.02)
 to.plot = matrix(nrow = length(corr.coef), ncol = 11) #preallocate vector to plot
 colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.bias", "nie.bias", "nde.percent.bias", "nie.percent.bias","nde.coverage", "nie.coverage")
 result = vector(mode = "list", length = length(corr.coef))  #preallocate result list
@@ -10,9 +10,9 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                n = 1000,
                                covariate.models = c("gamma"),
                                covariate.parameters = list(c(8, 4.5)),
-                               true.exposure.coefs =  c(I = 0.35512882, X = 0.00206941),
-                               true.mediator.coefs = c(I = 50, Z = 5, X = 0.11, ZX = 0),
-                               true.outcome.coefs = c(I = 50, Z = 5, M = 5, ZM = corr.coef[i], X = 0.35),
+                               true.exposure.coefs =  c(I = -0.4, X = 0.01),
+                               true.mediator.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0),
+                               true.outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef[i], X = 0.05),
                                outcome.mediator.type = "linear",
                                sd.exposure = 1,
                                sd.mediator = 1,
@@ -39,17 +39,18 @@ ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
   xlab('correlation.coef') +
-  ylab('est.effect')
+  ylab('est.effect') +
+  expand_limits(y=0)
 ggplot() + 
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
   xlab('correlation.coef') +
-  ylab('est.effect')
+  ylab('effect')
 ggplot() + 
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
   geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
   xlab('correlation.coef') +
-  ylab('est.effect')
+  ylab('effect')
 
 ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde)) +
   geom_point() +

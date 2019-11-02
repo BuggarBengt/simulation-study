@@ -1,0 +1,81 @@
+---
+title: "simulation summary"
+author: "Joakim Wallmark"
+date: "11/2/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Simulation study
+
+Investigate bias from model misspecification when estimating NDE and NIE.
+
+## Simulation scenarios
+variable | type | true model
+---------|----- | ----------------
+X(additional covariate) | continous | $X\sim gamma(8, 4.5)$
+Z(exposure) | binary | $Z=I(Y*>0)$ where $Z*\sim U_0+U_1X+N(0, 1)$
+M(mediator) | continous | $M\sim B_0+B_1Z+B_2X+N(0, 1)$
+Y(outcome) | continous | $Y\sim \theta_0+\theta_1Z+\theta_2M+\theta_3ZM+\theta_4X+N(0, 1)$
+
+Table: Variables used for simulations
+
+Coefficient values used(Only positive effects. Maybe test with negatives?):
+
+* $U_0=-0.4$
+* $U_1=0.01$
+* $B_0=3$
+* $B_1=2$
+* $B_2=0.05$
+* $\theta_0=5$
+* $\theta_1=1$
+* $\theta_2=0.5$
+* $\theta_3=$ varied[-0.5, 0.5]
+* $\theta_4=0.05$
+
+Estimated mediator model was set to the correct one. Estimated outcome model was linear but misspecified without $ZM$ interaction: $Y\sim Z+M+X$.
+
+##Results
+Printa SE. Kanske ändå köra med simsum?
+
+```{r echo=F}
+library(ggplot2)
+to.plot.read = read.table("toplot.txt") # read results
+
+ggplot() + #mycket högre effekt på true nde av att öka korrelationen
+  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
+  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
+  xlab('correlation.coef') +
+  ylab('est.effect') +
+  expand_limits(y=0)
+ggplot() + 
+  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
+  xlab('correlation.coef') +
+  ylab('effect')
+ggplot() + 
+  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
+  xlab('correlation.coef') +
+  ylab('effect')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

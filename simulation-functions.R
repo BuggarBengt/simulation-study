@@ -30,10 +30,10 @@ generate.data = function(n,
   m.epsilon <- rnorm(n, sd = sd.mediator) 
   y.epsilon <- rnorm(n, sd = sd.outcome) 
   
+  Z.star <- exposure.coefs["I"] + exposure.coefs["X"]*X + z.epsilon
+  Z <- ifelse(Z.star>0, 1, 0)
   if (outcome.mediator.type == "linear") {
     # Generate exposure, mediator and outcome (True models):
-    Z.star <- exposure.coefs["I"] + exposure.coefs["X"]*X + z.epsilon
-    Z <- ifelse(Z.star>0, 1, 0)
     M <- mediator.coefs["I"] + mediator.coefs["Z"]*Z + mediator.coefs["X"]*X + m.epsilon
     Y <- outcome.coefs["I"] + outcome.coefs["Z"]*Z + outcome.coefs["M"]*M + outcome.coefs["ZM"]*Z*M + outcome.coefs["X"]*X + y.epsilon
   }
@@ -79,15 +79,15 @@ run.simulation = function(iterations = 1000,
     }
     
     # Estimation of effects:
-    test.my <- sensmediation(med.model=m.model, out.model=y.model, Rho=0, progress=FALSE, exp.name = "Z", med.name = "M")
+    est <- sensmediation(med.model=m.model, out.model=y.model, Rho=0, progress=FALSE, exp.name = "Z", med.name = "M")
     
     # Storage of results
-    effekter.nie[i] <- test.my$NIE
-    effekter.nde[i] <- test.my$NDE
-    CI.nie.lower[i] <- test.my$CI$CI.nie[,1]
-    CI.nie.upper[i] <- test.my$CI$CI.nie[,2]
-    CI.nde.lower[i] <- test.my$CI$CI.nde[,1]
-    CI.nde.upper[i] <- test.my$CI$CI.nde[,2]
+    effekter.nie[i] <- est$NIE
+    effekter.nde[i] <- est$NDE
+    CI.nie.lower[i] <- est$CI$CI.nie[,1]
+    CI.nie.upper[i] <- est$CI$CI.nie[,2]
+    CI.nde.lower[i] <- est$CI$CI.nde[,1]
+    CI.nde.upper[i] <- est$CI$CI.nde[,2]
   }  
   
   return(list(true.nie = true.NIE,
