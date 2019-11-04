@@ -121,6 +121,8 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
 write.table(result, "result.txt") # store the results
 result.read = read.table("result.txt") # read results
 
+s <- simsum(data = result[[1]], estvarname = "est.nde", true = "true.nde", se = "SE.nde")
+sd(result[[1]][,4])
 
 # NOT RUN {
 library(rsimsum)
