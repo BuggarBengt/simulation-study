@@ -97,7 +97,33 @@ NDE.string
 
 
 
+set.seed(4235)
+corr.coef = seq(-0.5,0.5, 0.02)
+to.plot = matrix(nrow = length(corr.coef), ncol = 11) #preallocate vector to plot
+colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.bias", "nie.bias", "nde.percent.bias", "nie.percent.bias","nde.coverage", "nie.coverage")
+result = vector(mode = "list", length = length(corr.coef))  #preallocate result list
+for (i in 1:length(result)) { # run simulations while increasing interaction effect
+  result[[i]] = run.simulation(iterations = 10,
+                               n = 1000,
+                               covariate.models = c("gamma"),
+                               covariate.parameters = list(c(8, 4.5)),
+                               true.exposure.coefs =  c(I = -0.4, X = 0.01),
+                               true.mediator.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0),
+                               true.outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef[i], X = 0.05),
+                               outcome.mediator.type = "linear",
+                               sd.exposure = 1,
+                               sd.mediator = 1,
+                               sd.outcome = 1,
+                               misspecified.mediator.formula = "M~Z+X",
+                               misspecified.outcome.formula = "Y~Z+M+X")
+}
+
+write.table(result, "result.txt") # store the results
+result.read = read.table("result.txt") # read results
+
+
 # NOT RUN {
+library(rsimsum)
 data("MIsim", package = "rsimsum")
 s <- simsum(data = MIsim, estvarname = "b", true = 0.5, se = "se", methodvar = "method", ref = "CC")
 # If 'ref' is not specified, the reference method is inferred

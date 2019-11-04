@@ -55,12 +55,10 @@ run.simulation = function(iterations = 1000,
                           sd.outcome = 1,
                           misspecified.mediator.formula = "Y~M+X", 
                           misspecified.outcome.formula = "Y~Z+M+X") {
-  effekter.nie <- rep(NA, iterations) # Estimated NIE 
-  effekter.nde <- rep(NA, iterations) # Estimated NDE 
-  CI.nie.lower <- rep(NA, iterations) # Lower bound of 95% CI of NIE  
-  CI.nie.upper <- rep(NA, iterations) # Upper bound of 95% CI of NIE
-  CI.nde.lower <- rep(NA, iterations) # Lower bound of 95% CI of NDE
-  CI.nde.upper <- rep(NA, iterations) # Upper bound of 95% CI of NDE
+  est.nie <- rep(NA, iterations) # Estimated NIE 
+  est.nde <- rep(NA, iterations) # Estimated NDE 
+  SE.nie <- rep(NA, iterations) # SE NIE
+  SE.nde <- rep(NA, iterations) # SE NDE
   true.NDE <- numeric(iterations) # True NDE
   true.NIE = ifelse(outcome.mediator.type == "linear",   # True NIE
                     calc.nie.linear(0, 1, b = true.mediator.coefs, t = true.outcome.coefs), 
@@ -82,22 +80,19 @@ run.simulation = function(iterations = 1000,
     est <- sensmediation(med.model=m.model, out.model=y.model, Rho=0, progress=FALSE, exp.name = "Z", med.name = "M")
     
     # Storage of results
-    effekter.nie[i] <- est$NIE
-    effekter.nde[i] <- est$NDE
-    CI.nie.lower[i] <- est$CI$CI.nie[,1]
-    CI.nie.upper[i] <- est$CI$CI.nie[,2]
-    CI.nde.lower[i] <- est$CI$CI.nde[,1]
-    CI.nde.upper[i] <- est$CI$CI.nde[,2]
+    est$std.errs$se.nie
+    est.nie[i] <- est$NIE
+    est.nde[i] <- est$NDE
+    SE.nie[i] <- est$std.errs$se.nie
+    SE.nde[i] <- est$std.errs$se.nde
   }  
   
-  return(list(true.nie = true.NIE,
+  return(cbind(true.nie = true.NIE,
               true.nde = true.NDE,
-              est.nie = effekter.nie, 
-              est.nde = effekter.nde, 
-              CI.nie.lower = CI.nie.lower,
-              CI.nie.upper = CI.nie.upper,
-              CI.nde.lower = CI.nde.lower,
-              CI.nde.upper = CI.nde.upper))
+              est.nie = est.nie, 
+              est.nde = est.nde, 
+              SE.nie = SE.nie,
+              SE.nde = SE.nde))
 }
 
 
