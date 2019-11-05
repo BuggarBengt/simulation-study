@@ -8,6 +8,30 @@ calc.nie.linear = function(z.from, z.to, b, t) {
   return((t["M"]*b["Z"] + t["ZM"]*b["Z"]*z.to)*(z.to-z.from))
 }
 
+#Estimate true NIE and true NDE. Use high amount of iterations to reduce SE.
+simulate.true.effects = function(n = 1000000,
+                                 covariate.models = c("gamma"),
+                                 covariate.parameters = list(c(8, 4.5)),
+                                 exposure.coefs,
+                                 mediator.coefs, 
+                                 outcome.coefs,
+                                 outcome.mediator.type = "linear",
+                                 sd.exposure = 1,
+                                 sd.mediator = 1,
+                                 sd.outcome = 1) {
+  data = generate.data(n, covariate.models, covariate.parameters, exposure.coefs, mediator.coefs,
+                       outcome.coefs,  outcome.mediator.type, sd.exposure, sd.mediator, sd.outcome)
+  if (outcome.mediator.type == "linear") {
+    true.NDE = calc.nde.linear(z.from = 0, z.to = 1, b = mediator.coefs, t = outcome.coefs, x = data[, "X"]) 
+    true.NIE = calc.nie.linear(0, 1, b = mediator.coefs, t = outcome.coefs)
+  }
+  else {
+    true.NDE = 0
+    true.NIE = 0
+  }
+  
+  return(cbind(true.nie = mean(true.NIE), true.nde = mean(true.NDE)))
+}
 
 generate.data = function(n,
                          covariate.models = c("gamma"),
@@ -59,17 +83,11 @@ run.simulation = function(iterations = 1000,
   est.nde <- rep(NA, iterations) # Estimated NDE 
   SE.nie <- rep(NA, iterations) # SE NIE
   SE.nde <- rep(NA, iterations) # SE NDE
-  true.NDE <- numeric(iterations) # True NDE
-  true.NIE = ifelse(outcome.mediator.type == "linear",   # True NIE
-                    calc.nie.linear(0, 1, b = true.mediator.coefs, t = true.outcome.coefs), 
-                    numeric(iterations))
   
   for(i in 1:iterations){
     data = generate.data(n, covariate.models, covariate.parameters, true.exposure.coefs, true.mediator.coefs,
                          true.outcome.coefs,  outcome.mediator.type, sd.exposure, sd.mediator, sd.outcome)
-    
-    true.NDE[i] = mean(calc.nde.linear(z.from = 0, z.to = 1, b = true.mediator.coefs, t = true.outcome.coefs, x = data[, "X"]))
-    
+
     if (outcome.mediator.type == "linear") {
       # Misspecified models:
       m.model <- glm(misspecified.mediator.formula, data = data) 
@@ -80,22 +98,34 @@ run.simulation = function(iterations = 1000,
     est <- sensmediation(med.model=m.model, out.model=y.model, Rho=0, progress=FALSE, exp.name = "Z", med.name = "M")
     
     # Storage of results
-    est$std.errs$se.nie
     est.nie[i] <- est$NIE
     est.nde[i] <- est$NDE
     SE.nie[i] <- est$std.errs$se.nie
     SE.nde[i] <- est$std.errs$se.nde
   }  
   
-  return(cbind(true.nie = true.NIE,
-              true.nde = true.NDE,
-              est.nie = est.nie, 
-              est.nde = est.nde, 
-              SE.nie = SE.nie,
-              SE.nde = SE.nde))
+  return(cbind(est.nie = est.nie, 
+               est.nde = est.nde, 
+               SE.nie = SE.nie,
+               SE.nde = SE.nde))
 }
 
-
+create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE, corr.coef) {
+  to.plot = matrix(nrow = length(result.summary.NDE), ncol = 9) #preallocate vector to plot
+  colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.emp.SE", "nie.emp.SE", "nde.coverage", "nie.coverage")
+  to.plot[, 1] = corr.coef
+  for (i in 1:length(result.summary.NDE)) {
+    to.plot[i, 2] = result.summary.NDE[[i]]$true
+    to.plot[i, 3] = result.summary.NIE[[i]]$true
+    to.plot[i, 4] = result.summary.NDE[[i]]$summ[2 ,2]
+    to.plot[i, 5] = result.summary.NIE[[i]]$summ[2 ,2]
+    to.plot[i, 6] = result.summary.NDE[[i]]$summ[7 ,2]
+    to.plot[i, 7] = result.summary.NIE[[i]]$summ[7 ,2]
+    to.plot[i, 8] = result.summary.NDE[[i]]$summ[12 ,2]
+    to.plot[i, 9] = result.summary.NIE[[i]]$summ[12 ,2]
+  }
+  return(to.plot)
+}
 
 
 

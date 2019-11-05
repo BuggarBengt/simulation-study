@@ -1,12 +1,22 @@
 library(ggplot2)
+library(rsimsum)
+
+corr.coef = seq(-0.5,0.5, 0.02)
+result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
+true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
+n.true.effect = 10000000
+set.seed(4235)
+for (i in 1:length(true.effects)) { #Calculate true effects for given scenario while increasing interaction effect
+  true.effects[[i]] = simulate.true.effects(n = n.true.effect,
+                                     exposure.coefs =  c(I = -0.4, X = 0.01),
+                                     mediator.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0),
+                                     outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef[i], X = 0.05),
+                                     outcome.mediator.type = "linear")
+}
 
 set.seed(4235)
-corr.coef = seq(-0.5,0.5, 0.02)
-to.plot = matrix(nrow = length(corr.coef), ncol = 11) #preallocate vector to plot
-colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.bias", "nie.bias", "nde.percent.bias", "nie.percent.bias","nde.coverage", "nie.coverage")
-result = vector(mode = "list", length = length(corr.coef))  #preallocate result list
 for (i in 1:length(result)) { # run simulations while increasing interaction effect
-  result[[i]] = run.simulation(iterations = 100,
+  result[[i]] = run.simulation(iterations = 1000,
                                n = 1000,
                                covariate.models = c("gamma"),
                                covariate.parameters = list(c(8, 4.5)),
@@ -19,118 +29,47 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                sd.outcome = 1,
                                misspecified.mediator.formula = "M~Z+X",
                                misspecified.outcome.formula = "Y~Z+M+X")
-  to.plot[i, 1] = corr.coef[i]
-  to.plot[i, 2] = mean(result[[i]]$true.nde)
-  to.plot[i, 3] = mean(result[[i]]$true.nie)
-  to.plot[i, 4] = mean(result[[i]]$est.nde)
-  to.plot[i, 5] = mean(result[[i]]$est.nie)
-  to.plot[i, 6] = mean(result[[i]]$est.nde - result[[i]]$true.nde)
-  to.plot[i, 7] = mean(result[[i]]$est.nie) - result[[i]]$true.nie
-  to.plot[i, 8] = mean((result[[i]]$est.nde - result[[i]]$true.nde)/result[[i]]$true.nde)
-  to.plot[i, 9] = mean((result[[i]]$est.nie - result[[i]]$true.nie)/result[[i]]$true.nie)
-  to.plot[i, 10] = mean(ifelse(result[[i]]$true.nde < result[[i]]$CI.nde.upper & result[[i]]$true.nde > result[[i]]$CI.nde.lower, 1, 0))
-  to.plot[i, 11] = mean(ifelse(result[[i]]$true.nie < result[[i]]$CI.nie.upper & result[[i]]$true.nie > result[[i]]$CI.nie.lower, 1, 0))
 }
 
-write.table(to.plot, "toplot.txt") # store the results
-to.plot.read = read.table("toplot.txt") # read results
+save(true.effects, file="true.effects.RData") # store the true.effects
+save(result, file="result.RData") # store the results
+load("true.effects.RData")# read true.effects
+load("result.RData")# read results
+
+result.summary.NDE = vector(mode = "list", length = length(result))
+result.summary.NIE = vector(mode = "list", length = length(result))
+for (i in 1:length(result)) { # get different statistics of our estimates using rsimsum for each scenario
+  result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = mean(true.effects[[i]][, 2]), se = "SE.nde")
+  result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = mean(true.effects[[i]][, 1]), se = "SE.nie")
+}
+
+to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, corr.coef)
+
+save(to.plot, file="to-plot.RData") # store the results
+load("to-plot.RData")# read true.effects
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
-  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
-  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
   xlab('correlation.coef') +
-  ylab('est.effect') +
+  ylab('effect') +
   expand_limits(y=0)
 ggplot() + 
-  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
-  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nde-nde.emp.SE, ymax=est.nde+nde.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect')
 ggplot() + 
-  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
-  geom_line(data = data.frame(to.plot.read), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nie-nie.emp.SE, ymax=est.nie+nie.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect')
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
+  xlab('correlation.coef') +
+  ylab('coverage')
 
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = est.nie)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nde.bias)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.bias)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.bias + nde.bias)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nde.percent.bias)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.percent.bias)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage)) +
-  geom_point() +
-  geom_line()
-ggplot(data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage)) +
-  geom_point() +
-  geom_line()
-
-
-
-
-result2 = runSimulation(S = 1000, n = 1000, exposure.coefs = c(a0 = -3.416096, a1 = 0.036231), 
-                        mediator.coefs = c(b0 = 10, b1 = 1.4, b2 = 0.011, b3 = 0), 
-                        outcome.coefs = c(t0 = 10, t1 = 0.5, t2 = 0.15, t3=0.0, t4 = 0.035, t5 = 0, t6 = 0, t7 = 0))
-
-mean(ifelse(result$true.nie < result$CI.nie.upper & result$true.nie > result$CI.nie.lower, 1, 0))
-mean(ifelse(result$true.nde < result$CI.nde.upper & result$true.nde > result$CI.nde.lower, 1, 0))
-
-NIE.string = paste("True NIE: ", round(mean(result$true.nie), 4), " Est. NIE: ", round(mean(result$est.nie), digits = 4), " Avg. CI width: (", round(mean(result$CI.nie.lower), digits = 4), "; ", round(mean(result$CI.nie.upper), digits = 4), ")", sep = "") 
-NDE.string = paste("True NDE: ", round(mean(result$true.nde), 4), " Est. NDE: ", round(mean(result$est.nde), digits = 4), " Avg. CI width: (", round(mean(result$CI.nde.lower), digits = 4), "; ", round(mean(result$CI.nde.upper), digits = 4), ")", sep = "") 
-NIE.string
-NDE.string
-
-
-
-set.seed(4235)
-corr.coef = seq(-0.5,0.5, 0.02)
-to.plot = matrix(nrow = length(corr.coef), ncol = 11) #preallocate vector to plot
-colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.bias", "nie.bias", "nde.percent.bias", "nie.percent.bias","nde.coverage", "nie.coverage")
-result = vector(mode = "list", length = length(corr.coef))  #preallocate result list
-for (i in 1:length(result)) { # run simulations while increasing interaction effect
-  result[[i]] = run.simulation(iterations = 10,
-                               n = 1000,
-                               covariate.models = c("gamma"),
-                               covariate.parameters = list(c(8, 4.5)),
-                               true.exposure.coefs =  c(I = -0.4, X = 0.01),
-                               true.mediator.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0),
-                               true.outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef[i], X = 0.05),
-                               outcome.mediator.type = "linear",
-                               sd.exposure = 1,
-                               sd.mediator = 1,
-                               sd.outcome = 1,
-                               misspecified.mediator.formula = "M~Z+X",
-                               misspecified.outcome.formula = "Y~Z+M+X")
-}
-
-write.table(result, "result.txt") # store the results
-result.read = read.table("result.txt") # read results
-
-s <- simsum(data = result[[1]], estvarname = "est.nde", true = "true.nde", se = "SE.nde")
-sd(result[[1]][,4])
-
-# NOT RUN {
-library(rsimsum)
-data("MIsim", package = "rsimsum")
-s <- simsum(data = MIsim, estvarname = "b", true = 0.5, se = "se", methodvar = "method", ref = "CC")
-# If 'ref' is not specified, the reference method is inferred
-s <- simsum(data = MIsim, estvarname = "b", true = 0.5, se = "se", methodvar = "method")
-# }
-
-
-
+knitr::kable(to.plot, col.names = c("coef.val", "true.nde", "true.nie", "est.nde", "est.nie", "nde.emp.SE", "nie.emp.SE", "nde.cov", "nie.cov"))
