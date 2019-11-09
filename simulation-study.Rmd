@@ -67,8 +67,8 @@ ggplot() +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage, col = "NDE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
   xlab('correlation.coef') +
-  ylab('coverage')
-
+  ylab('coverage') +
+  ggtitle("Coverage of nominal 95% CI. Nominal=baserat på delta-SE?") 
 ```
 
 

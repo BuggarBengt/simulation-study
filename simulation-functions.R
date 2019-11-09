@@ -112,7 +112,8 @@ run.simulation = function(iterations = 1000,
 
 create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE, corr.coef) {
   to.plot = matrix(nrow = length(result.summary.NDE), ncol = 9) #preallocate vector to plot
-  colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.emp.SE", "nie.emp.SE", "nde.coverage", "nie.coverage")
+  colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.emp.SE", "nie.emp.SE", 
+                        "nde.coverage", "nie.coverage", "nde.mean.delta.SE", "nie.mean.delta.SE")
   to.plot[, 1] = corr.coef
   for (i in 1:length(result.summary.NDE)) {
     to.plot[i, 2] = result.summary.NDE[[i]]$true

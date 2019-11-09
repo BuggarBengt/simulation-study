@@ -36,6 +36,12 @@ save(result, file="result.RData") # store the results
 load("true.effects.RData")# read true.effects
 load("result.RData")# read results
 
+mean(result[[15]][,3])
+sd(result[[15]][,3])
+sd(result[[15]][,1])
+summary(result.summary.NIE[[15]])
+result.summary.NIE[[15]]$summ
+
 result.summary.NDE = vector(mode = "list", length = length(result))
 result.summary.NIE = vector(mode = "list", length = length(result))
 for (i in 1:length(result)) { # get different statistics of our estimates using rsimsum for each scenario
@@ -43,7 +49,7 @@ for (i in 1:length(result)) { # get different statistics of our estimates using 
   result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = mean(true.effects[[i]][, 1]), se = "SE.nie")
 }
 
-to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, corr.coef)
+to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, result, corr.coef)
 
 save(to.plot, file="to-plot.RData") # store the results
 load("to-plot.RData")# read true.effects
