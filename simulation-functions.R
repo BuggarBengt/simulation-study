@@ -1,4 +1,5 @@
 library(sensmediation)
+library(mvtnorm)
 
 calc.nde.linear = function(z.from, z.to, x, b, t) {
   return((t["Z"] + t["ZM"]*b["I"] + t["ZM"]*b["Z"]*z.from + t["ZM"]*b["X"]*x)*(z.to-z.from))
@@ -16,11 +17,12 @@ simulate.true.effects = function(n = 1000000,
                                  mediator.coefs, 
                                  outcome.coefs,
                                  outcome.mediator.type = "linear",
+                                 mediator.outcome.corr = 0,
                                  sd.exposure = 1,
                                  sd.mediator = 1,
                                  sd.outcome = 1) {
   data = generate.data(n, covariate.models, covariate.parameters, exposure.coefs, mediator.coefs,
-                       outcome.coefs,  outcome.mediator.type, sd.exposure, sd.mediator, sd.outcome)
+                       outcome.coefs,  outcome.mediator.type, mediator.outcome.corr, sd.exposure, sd.mediator, sd.outcome)
   if (outcome.mediator.type == "linear") {
     true.NDE = calc.nde.linear(z.from = 0, z.to = 1, b = mediator.coefs, t = outcome.coefs, x = data[, "X"]) 
     true.NIE = calc.nie.linear(0, 1, b = mediator.coefs, t = outcome.coefs)
@@ -40,6 +42,7 @@ generate.data = function(n,
                          mediator.coefs, 
                          outcome.coefs,
                          outcome.mediator.type = "linear",
+                         mediator.outcome.corr = 0,
                          sd.exposure = 1,
                          sd.mediator = 1,
                          sd.outcome = 1) {
@@ -51,15 +54,15 @@ generate.data = function(n,
   }
   
   z.epsilon <- rnorm(n, sd = sd.exposure) # Error terms for each model. Since z is probit, it should have 1
-  m.epsilon <- rnorm(n, sd = sd.mediator) 
-  y.epsilon <- rnorm(n, sd = sd.outcome) 
-  
+  corr.matrix <- cbind(c(sd.mediator,mediator.outcome.corr),c(mediator.outcome.corr,sd.outcome)) #correlation matrix for error terms 
+  epsilon <- rmvnorm(n,sigma=Sigma) # Correlated error terms, mediator and outcome models
+
   Z.star <- exposure.coefs["I"] + exposure.coefs["X"]*X + z.epsilon
   Z <- ifelse(Z.star>0, 1, 0)
   if (outcome.mediator.type == "linear") {
     # Generate exposure, mediator and outcome (True models):
-    M <- mediator.coefs["I"] + mediator.coefs["Z"]*Z + mediator.coefs["X"]*X + m.epsilon
-    Y <- outcome.coefs["I"] + outcome.coefs["Z"]*Z + outcome.coefs["M"]*M + outcome.coefs["ZM"]*Z*M + outcome.coefs["X"]*X + y.epsilon
+    M <- mediator.coefs["I"] + mediator.coefs["Z"]*Z + mediator.coefs["X"]*X + epsilon[, 1]
+    Y <- outcome.coefs["I"] + outcome.coefs["Z"]*Z + outcome.coefs["M"]*M + outcome.coefs["ZM"]*Z*M + outcome.coefs["X"]*X + epsilon[, 2]
   }
   
   return(data.frame(Z=Z, M=M, Y=Y, X=X))
@@ -74,11 +77,13 @@ run.simulation = function(iterations = 1000,
                           true.mediator.coefs, 
                           true.outcome.coefs,
                           outcome.mediator.type = "linear",
+                          mediator.outcome.corr = 0,
                           sd.exposure = 1,
                           sd.mediator = 1,
                           sd.outcome = 1,
                           misspecified.mediator.formula = "Y~M+X", 
-                          misspecified.outcome.formula = "Y~Z+M+X") {
+                          misspecified.outcome.formula = "Y~Z+M+X",
+                          misspecified.outcome.mediator.corr = 0) {
   est.nie <- rep(NA, iterations) # Estimated NIE 
   est.nde <- rep(NA, iterations) # Estimated NDE 
   SE.nie <- rep(NA, iterations) # SE NIE
@@ -86,7 +91,7 @@ run.simulation = function(iterations = 1000,
   
   for(i in 1:iterations){
     data = generate.data(n, covariate.models, covariate.parameters, true.exposure.coefs, true.mediator.coefs,
-                         true.outcome.coefs,  outcome.mediator.type, sd.exposure, sd.mediator, sd.outcome)
+                         true.outcome.coefs,  outcome.mediator.type, mediator.outcome.corr, sd.exposure, sd.mediator, sd.outcome)
 
     if (outcome.mediator.type == "linear") {
       # Misspecified models:
@@ -95,7 +100,7 @@ run.simulation = function(iterations = 1000,
     }
     
     # Estimation of effects:
-    est <- sensmediation(med.model=m.model, out.model=y.model, Rho=0, progress=FALSE, exp.name = "Z", med.name = "M")
+    est <- sensmediation(med.model=m.model, out.model=y.model, Rho=misspecified.outcome.mediator.corr, progress=FALSE, exp.name = "Z", med.name = "M")
     
     # Storage of results
     est.nie[i] <- est$NIE
@@ -110,10 +115,11 @@ run.simulation = function(iterations = 1000,
                SE.nde = SE.nde))
 }
 
-create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE, corr.coef) {
-  to.plot = matrix(nrow = length(result.summary.NDE), ncol = 9) #preallocate vector to plot
-  colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", "nde.emp.SE", "nie.emp.SE", 
-                        "nde.coverage", "nie.coverage", "nde.mean.delta.SE", "nie.mean.delta.SE")
+create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE, result, corr.coef) {
+  to.plot = matrix(nrow = length(result.summary.NDE), ncol = 13) #preallocate vector to plot
+  colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", 
+                        "nde.emp.SE", "nie.emp.SE", "nde.mean.delta.SE", "nie.mean.delta.SE", 
+                        "nde.model.SE", "nie.model.SE", "nde.coverage", "nie.coverage")
   to.plot[, 1] = corr.coef
   for (i in 1:length(result.summary.NDE)) {
     to.plot[i, 2] = result.summary.NDE[[i]]$true
@@ -122,8 +128,12 @@ create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE
     to.plot[i, 5] = result.summary.NIE[[i]]$summ[2 ,2]
     to.plot[i, 6] = result.summary.NDE[[i]]$summ[7 ,2]
     to.plot[i, 7] = result.summary.NIE[[i]]$summ[7 ,2]
-    to.plot[i, 8] = result.summary.NDE[[i]]$summ[12 ,2]
-    to.plot[i, 9] = result.summary.NIE[[i]]$summ[12 ,2]
+    to.plot[i, 8] = mean(result[[i]][, 4]) #mean SE of NDE from delta method
+    to.plot[i, 9] = mean(result[[i]][, 3]) #mean SE of NIE from delta method
+    to.plot[i, 10] = result.summary.NDE[[i]]$summ[10 ,2]
+    to.plot[i, 11] = result.summary.NIE[[i]]$summ[10 ,2]
+    to.plot[i, 12] = result.summary.NDE[[i]]$summ[12 ,2]
+    to.plot[i, 13] = result.summary.NIE[[i]]$summ[12 ,2]
   }
   return(to.plot)
 }
