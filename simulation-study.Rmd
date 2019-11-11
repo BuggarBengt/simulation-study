@@ -69,6 +69,20 @@ ggplot() +
   xlab('correlation.coef') +
   ylab('coverage') +
   ggtitle("Coverage of nominal 95% CI. Nominal=baserat på delta-SE?") 
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.mean.delta.SE, col = "delta SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.model.SE, col = "model. SE")) +
+  xlab('correlation.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NDE SE's")
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.mean.delta.SE, col = "delta SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.model.SE, col = "model. SE")) +
+  xlab('correlation.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NIE SE's")
 ```
 
 
