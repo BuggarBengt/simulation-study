@@ -4,17 +4,6 @@ library(rsimsum)
 rhos = seq(-0.5,0.5, 0.02)
 corr.coef = 0.5
 result = vector(mode = "list", length = length(rhos))  #preallocate simulation result list
-true.effects = vector(mode = "list", length = length(rhos))  #preallocate list
-n.true.effect = 10000000
-set.seed(4235)
-for (i in 1:length(rhos)) { #Calculate true effects for given scenario while increasing interaction effect
-  true.effects[[i]] = simulate.true.effects(n = n.true.effect,
-                                            exposure.coefs =  c(I = -0.4, X = 0.01),
-                                            mediator.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0),
-                                            outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef, X = 0.05),
-                                            outcome.mediator.type = "linear",
-                                            mediator.outcome.corr = rhos[i])
-}
 
 set.seed(4235)
 for (i in 1:length(result)) { # run simulations while increasing interaction effect
@@ -27,7 +16,6 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                true.outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef, X = 0.05),
                                outcome.mediator.type = "linear",
                                mediator.outcome.corr = rhos[i],
-                               rho = 0.5, 
                                sd.exposure = 1,
                                sd.mediator = 1,
                                sd.outcome = 1,
@@ -35,10 +23,9 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                misspecified.outcome.formula = "Y~Z*M+X")
 }
 
-save(true.effects, file="true.effects.RData") # store the true.effects
 save(result, file="result.confounding.RData") # store the results
-load("true.effects.confounding.RData")# read true.effects
-load("result.RData")# read results
+load("true.effects.RData")# read true.effects
+load("result.confounding.RData")# read results
 
 mean(result[[15]][,3])
 sd(result[[15]][,3])
@@ -97,8 +84,4 @@ ggplot() +
   ylab('SE') +
   ggtitle("Comparison of NIE SE's")
 
-
-
-knitr::kable(to.plot, col.names = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", 
-                                    "nde.emp.SE", "nie.emp.SE", "nde.mean.delta.SE", "nie.mean.delta.SE", 
-                                    "nde.model.SE", "nie.model.SE", "nde.coverage", "nie.coverage"))
+knitr::kable(to.plot, col.names = colnames(to.plot))

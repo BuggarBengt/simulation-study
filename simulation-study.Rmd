@@ -43,7 +43,7 @@ Estimated mediator model was set to the correct one. Estimated outcome model was
 ```{r echo=F}
 library(ggplot2)
 load("to-plot.RData")# read true.effects
-knitr::kable(to.plot, col.names = c("coef.val", "true.nde", "true.nie", "est.nde", "est.nie", "nde.emp.SE", "nie.emp.SE", "nde.cov", "nie.cov"))
+knitr::kable(to.plot, col.names = colnames(to.plot))
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
