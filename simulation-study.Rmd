@@ -21,9 +21,7 @@ Z(exposure) | binary | $Z=I(Y*>0)$ where $Z*\sim U_0+U_1X+N(0, 1)$
 M(mediator) | continous | $M\sim B_0+B_1Z+B_2X+N(0, 1)$
 Y(outcome) | continous | $Y\sim \theta_0+\theta_1Z+\theta_2M+\theta_3ZM+\theta_4X+N(0, 1)$
 
-Table: Variables used for simulations
-
-Coefficient values used(Only positive effects. Maybe test with negatives?):
+Table: Variables used for simulations:
 
 * $U_0=-0.4$
 * $U_1=0.01$
@@ -44,10 +42,11 @@ Estimated mediator model was set to the correct one. Estimated outcome model was
 library(ggplot2)
 load("to-plot.RData")# read true.effects
 knitr::kable(to.plot, col.names = colnames(to.plot))
+load("to-plot.RData")# read true.effects
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
   xlab('correlation.coef') +
   ylab('effect') +
   expand_limits(y=0)
@@ -68,16 +67,14 @@ ggplot() +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
   xlab('correlation.coef') +
   ylab('coverage') +
-  ggtitle("Coverage of nominal 95% CI. Nominal=baserat på delta-SE?") 
+  ggtitle("Coverage of nominal 95% CI. Nominal = based on delta-SE?")
 ggplot() + 
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.mean.delta.SE, col = "delta SE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.emp.SE, col = "emp. SE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.model.SE, col = "model. SE")) +
   xlab('correlation.coef') +
   ylab('SE') +
   ggtitle("Comparison of NDE SE's")
 ggplot() + 
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.mean.delta.SE, col = "delta SE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.emp.SE, col = "emp. SE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.model.SE, col = "model. SE")) +
   xlab('correlation.coef') +
