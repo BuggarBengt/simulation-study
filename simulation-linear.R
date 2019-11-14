@@ -36,9 +36,10 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
 Rprof()
 summaryRprof(tmp)
 
-save(true.effects, file="true.effects.RData") # store the true.effects
+save(true.effects, file="true.effects3.RData") # store the true.effects
 save(result, file="result3.RData") # store the results
 load("true.effects.RData")# read true.effects
+load("true.effects3.RData")# read true.effects
 load("result.RData")# read results  s=1000
 load("result2.RData")# read results s=10000
 load("result3.RData")# read results s=100000
