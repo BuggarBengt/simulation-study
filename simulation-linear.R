@@ -52,8 +52,8 @@ for (i in 1:length(result)) { # get different statistics of our estimates using 
 
 to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, corr.coef)
 
-save(to.plot, file="to-plot.RData") # store the results
-load("to-plot.RData")# read true.effects
+save(to.plot, file="to-plot3.RData") # store the results
+load("to-plot3.RData")# read true.effects
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
