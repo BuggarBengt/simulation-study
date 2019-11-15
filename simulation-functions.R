@@ -145,5 +145,3 @@ create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE
 
 
 
-
-

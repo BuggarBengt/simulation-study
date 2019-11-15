@@ -17,7 +17,7 @@ Investigate bias from model misspecification when estimating NDE and NIE.
 variable | type | true model
 ---------|----- | ----------------
 X(additional covariate) | continous | $X\sim gamma(8, 4.5)$
-Z(exposure) | binary | $Z=I(Y*>0)$ where $Z*\sim U_0+U_1X+N(0, 1)$
+Z(exposure) | binary | $Z=I(Z*>0)$ where $Z*\sim U_0+U_1X+N(0, 1)$
 M(mediator) | continous | $M\sim B_0+B_1Z+B_2X+N(0, 1)$
 Y(outcome) | continous | $Y\sim \theta_0+\theta_1Z+\theta_2M+\theta_3ZM+\theta_4X+N(0, 1)$
 
@@ -40,8 +40,9 @@ Estimated mediator model was set to the correct one. Estimated outcome model was
 
 ```{r echo=F}
 library(ggplot2)
-load("to-plot3.RData")
+load("to-plot3.RData")# read true.effects
 knitr::kable(to.plot, col.names = colnames(to.plot))
+load("to-plot3.RData")# read true.effects
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +

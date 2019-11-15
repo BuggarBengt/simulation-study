@@ -18,7 +18,6 @@ set.seed(4235)
 tmp <- tempfile() # time simulations
 Rprof(tmp)
 for (i in 1:length(result)) { # run simulations while increasing interaction effect
-  print(i/length(result))
   result[[i]] = run.simulation(iterations = 100000,
                                n = 1000,
                                covariate.models = c("gamma"),
@@ -32,6 +31,7 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                sd.outcome = 1,
                                misspecified.mediator.formula = "M~Z+X",
                                misspecified.outcome.formula = "Y~Z+M+X")
+  print(i/length(result))
 }
 Rprof()
 summaryRprof(tmp)
