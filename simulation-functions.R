@@ -116,26 +116,27 @@ run.simulation = function(iterations = 1000,
 }
 
 create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE, corr.coef) {
-  to.plot = matrix(nrow = length(result.summary.NDE), ncol = 11) #preallocate vector to plot
-  colnames(to.plot) = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", 
-                        "nde.emp.SE", "nie.emp.SE", "nde.model.SE", "nie.model.SE", "nde.coverage", "nie.coverage")
+  to.plot = matrix(nrow = length(result.summary.NDE), ncol = 13) #preallocate vector to plot
+  colnames(to.plot) = c("interaction.coefficient", "nde.true", "nde.est", "nde.bias", "nde.emp.SE", "nde.model.SE", "nde.coverage",
+                    "nie.true", "nie.est", "nie.bias", "nie.emp.SE", "nie.model.SE", "nie.coverage")
   to.plot[, 1] = corr.coef
   for (i in 1:length(result.summary.NDE)) {
     to.plot[i, 2] = result.summary.NDE[[i]]$true
-    to.plot[i, 3] = result.summary.NIE[[i]]$true
-    to.plot[i, 4] = result.summary.NDE[[i]]$summ[2 ,2]
-    to.plot[i, 5] = result.summary.NIE[[i]]$summ[2 ,2]
-    to.plot[i, 6] = result.summary.NDE[[i]]$summ[7 ,2]
-    to.plot[i, 7] = result.summary.NIE[[i]]$summ[7 ,2]
-    to.plot[i, 8] = result.summary.NDE[[i]]$summ[10 ,2]
-    to.plot[i, 9] = result.summary.NIE[[i]]$summ[10 ,2]
-    to.plot[i, 10] = result.summary.NDE[[i]]$summ[12 ,2]
-    to.plot[i, 11] = result.summary.NIE[[i]]$summ[12 ,2]
+    to.plot[i, 3] = result.summary.NDE[[i]]$summ[2 ,2]
+    to.plot[i, 4] = to.plot[i, 3] - to.plot[i, 2]
+    to.plot[i, 5] = result.summary.NDE[[i]]$summ[7 ,2]
+    to.plot[i, 6] = result.summary.NDE[[i]]$summ[10 ,2]
+    to.plot[i, 7] = result.summary.NDE[[i]]$summ[12 ,2]
+    
+    to.plot[i, 8] = result.summary.NIE[[i]]$true
+    to.plot[i, 9] = result.summary.NIE[[i]]$summ[2 ,2]
+    to.plot[i, 10] = to.plot[i, 9] - to.plot[i, 8]
+    to.plot[i, 11] = result.summary.NIE[[i]]$summ[7 ,2]
+    to.plot[i, 12] = result.summary.NIE[[i]]$summ[10 ,2]
+    to.plot[i, 13] = result.summary.NIE[[i]]$summ[12 ,2]
   }
   return(to.plot)
 }
-
-
 
 
 
