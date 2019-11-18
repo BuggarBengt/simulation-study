@@ -9,6 +9,18 @@ calc.nie.linear = function(z.from, z.to, b, t) {
   return((t["M"]*b["Z"] + t["ZM"]*b["Z"]*z.to)*(z.to-z.from))
 }
 
+calc.nde.probit = function(x, b, t) { #ekv. 11 in article
+  first.term = (pnorm(t["I"] + t["Z"] + (t["X"] + t["ZX"])*x) - pnorm(t["I"] + t["X"] * x)) * (1 - pnorm(b["I"] + b["X"] * x))
+  second.term = (pnorm(t["I"] + t["Z"] + t["M"] + t["ZM"] + (t["X"] + t["ZX"] + t["MX"] + t["ZMX"]) * x) - pnorm(t["I"] + t["M"] + (t["X"] + t["MX"])*x)) * pnorm(b["I"] + b["X"] * x)
+  return(first.term+second.term)
+}
+
+calc.nie.probit = function(x, b, t) { #ekv. 12 in article
+  first.factor = pnorm(t["I"] + t["Z"] + t["M"] + t["ZM"] + (t["X"] + t["ZX"] + t["ZM"] + t["ZMX"]) * x) - pnorm(t["I"] + t["Z"] + (t["X"] + t["ZX"])*x)
+  second.factor = pnorm(b["I"] + b["Z"] + (b["X"] + b["ZX"]) * x) - pnorm(b["I"] + b["X"] * x)
+  return(first.factor * second.factor)
+}
+
 #Estimate true NIE and true NDE. Use high amount of iterations to reduce SE.
 simulate.true.effects = function(n = 1000000,
                                  covariate.models = c("gamma"),
@@ -25,11 +37,11 @@ simulate.true.effects = function(n = 1000000,
                        outcome.coefs,  outcome.mediator.type, mediator.outcome.corr, sd.exposure, sd.mediator, sd.outcome)
   if (outcome.mediator.type == "linear") {
     true.NDE = calc.nde.linear(z.from = 0, z.to = 1, b = mediator.coefs, t = outcome.coefs, x = data[, "X"]) 
-    true.NIE = calc.nie.linear(0, 1, b = mediator.coefs, t = outcome.coefs)
+    true.NIE = calc.nie.linear(z.from = 0, z.to = 1, b = mediator.coefs, t = outcome.coefs)
   }
   else {
-    true.NDE = 0
-    true.NIE = 0
+    true.NDE = calc.nde.probit(b = mediator.coefs, t = outcome.coefs, x = data[, "X"]) 
+    true.NIE = calc.nie.probit(b = mediator.coefs, t = outcome.coefs, x = data[, "X"])
   }
   
   return(cbind(true.nie = mean(true.NIE), true.nde = mean(true.NDE)))
@@ -51,6 +63,9 @@ generate.data = function(n,
     if (covariate.models[x.index] == "gamma") {  
       X = cbind(X, rgamma(n,shape=covariate.parameters[[x.index]][1],scale=covariate.parameters[[x.index]][2]))
     }
+    if (covariate.models[x.index] == "x-gamma") {  
+      X = cbind(X, covariate.parameters[[x.index]][1]-rgamma(n,shape=covariate.parameters[[x.index]][2],scale=covariate.parameters[[x.index]][3]))
+    }
   }
   
   z.epsilon <- rnorm(n, sd = sd.exposure) # Error terms for each model. Since z is probit, it should have 1
@@ -61,8 +76,17 @@ generate.data = function(n,
   Z <- ifelse(Z.star>0, 1, 0)
   if (outcome.mediator.type == "linear") {
     # Generate exposure, mediator and outcome (True models):
-    M <- mediator.coefs["I"] + mediator.coefs["Z"]*Z + mediator.coefs["X"]*X + epsilon[, 1]
-    Y <- outcome.coefs["I"] + outcome.coefs["Z"]*Z + outcome.coefs["M"]*M + outcome.coefs["ZM"]*Z*M + outcome.coefs["X"]*X + epsilon[, 2]
+    M <- mediator.coefs["I"] + mediator.coefs["Z"]*Z + mediator.coefs["X"]*X + mediator.coefs["ZX"]*Z*X + epsilon[, 1]
+    Y <- outcome.coefs["I"] + outcome.coefs["Z"]*Z + outcome.coefs["M"]*M + outcome.coefs["ZM"]*Z*M + 
+      outcome.coefs["X"]*X + outcome.coefs["ZX"]*Z*X + outcome.coefs["MX"]*Z*X + outcome.coefs["ZMX"]*Z*X+ epsilon[, 2]
+  }
+  if (outcome.mediator.type == "probit") {
+    # Generate exposure, mediator and outcome (True models):
+    M.star <- mediator.coefs["I"] + mediator.coefs["Z"]*Z + mediator.coefs["X"]*X + mediator.coefs["ZX"]*Z*X + epsilon[, 1]
+    M <- ifelse(M.star > 0, 1, 0)
+    Y.star <- outcome.coefs["I"] + outcome.coefs["Z"]*Z + outcome.coefs["M"]*M + outcome.coefs["ZM"]*Z*M + 
+      outcome.coefs["X"]*X + outcome.coefs["ZX"]*Z*X + outcome.coefs["MX"]*Z*X + outcome.coefs["ZMX"]*Z*X+ epsilon[, 2]
+    Y <- ifelse(Y.star > 0, 1, 0)
   }
   
   return(data.frame(Z=Z, M=M, Y=Y, X=X))
@@ -97,6 +121,11 @@ run.simulation = function(iterations = 1000,
       # Misspecified models:
       m.model <- glm(misspecified.mediator.formula, data = data) 
       y.model <- glm(misspecified.outcome.formula, data = data) 
+    }
+    if (outcome.mediator.type == "probit") {
+      # Misspecified models:
+      m.model <- glm(misspecified.mediator.formula, data = data, family=binomial(link='probit')) 
+      y.model <- glm(misspecified.outcome.formula, data = data, family=binomial(link='probit')) 
     }
     
     # Estimation of effects:

@@ -1,22 +1,111 @@
-a#############################################
-######## Simulations, my-confounding ########
-#### Continuous mediator, binary outcome ####
-#############################################
+library(ggplot2)
+library(rsimsum)
 
-library(sensmediation)
-library(mvtnorm)
-#NDE för en massa dudes med olika ålder
-calc.nde.probit = function(x, b, t) { #ekv. 11 in article
-  first.term = (pnorm(t[1] + t[2] + (t[5] + t[6])*x) - pnorm(t[1] + t[5] * x)) * (1 - pnorm(b[1] + b[3] * x))
-  second.term = (pnorm(t[1] + t[2] + t[3] + t[4] + (t[5] + t[6] + t[7] + t[8]) * x) - pnorm(t[1]+t[3] + (t[5] + t[7])*x)) * pnorm(b[1] + b[3] * x)
-  return(first.term+second.term)
+corr.coef = seq(-0.5,0.5, 0.04)
+result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
+true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
+n.true.effect = 10000000
+set.seed(4235)
+for (i in 1:length(true.effects)) { #Calculate true effects for given scenario while increasing interaction effect
+  true.effects[[i]] = simulate.true.effects(n = n.true.effect,
+                                            covariate.models = "x-gamma",
+                                            covariate.parameters = list(c(104, 7, 4.5)),
+                                            exposure.coefs = c(I = -3.416096, X = 0.036231),
+                                            mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
+                                            outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = corr.coef[i], X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
+                                            outcome.mediator.type = "probit")
+  print(i)
 }
 
-calc.nie.probit = function(x, b, t) { #ekv. 12 in article
-  first.factor = pnorm(t[1] + t[2] + t[3] + t[4] + (t[5] + t[6] + t[7] + t[8]) * x) - pnorm(t[1]+t[2] + (t[5] + t[6])*x)
-  second.factor = pnorm(b[1] + b[2] + (b[3] + b[4]) * x) - pnorm(b[1] + b[3] * x)
-  return(first.factor * second.factor)
+save(true.effects, file="true.effects.probit.RData") # store the true.effects
+
+set.seed(4235)
+tmp <- tempfile() # time simulations
+Rprof(tmp)
+for (i in 1:length(result)) { # run simulations while increasing interaction effect
+  result[[i]] = run.simulation(iterations = 100,
+                               n = 100,
+                               covariate.models = c("x-gamma"),
+                               covariate.parameters = list(c(104, 8, 4.5)),
+                               true.exposure.coefs = c(I = -3.416096, X = 0.036231),
+                               true.mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
+                               true.outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = corr.coef[i], X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
+                               outcome.mediator.type = "probit",
+                               sd.exposure = 1,
+                               sd.mediator = 1,
+                               sd.outcome = 1,
+                               misspecified.mediator.formula = "M~Z+X",
+                               misspecified.outcome.formula = "Y~Z+M+X")
+  print(i/length(result))
 }
+Rprof()
+summaryRprof(tmp)
+
+save(true.effects, file="true.effects.probit100.RData") # store the true.effects
+load("true.effects.probit.RData")# read true.effects
+load("true.effects.probit100.RData")# read true.effects
+
+result.summary.NDE = vector(mode = "list", length = length(result))
+result.summary.NIE = vector(mode = "list", length = length(result))
+for (i in 1:length(result)) { # get different statistics of our estimates using rsimsum for each scenario
+  result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = mean(true.effects[[i]][, 2]), se = "SE.nde")
+  result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = mean(true.effects[[i]][, 1]), se = "SE.nie")
+}
+
+to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, corr.coef)
+save(to.plot, file="to-plot.probit100.RData") # store the results
+load("to-plot.probit100.RData")# read true.effects
+
+ggplot() + #mycket högre effekt på true nde av att öka korrelationen
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.true, col = "NIE")) +
+  xlab('correlation.coef') +
+  ylab('effect') +
+  expand_limits(y=0)
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.est, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true, col = "true NDE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('effect')
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.est, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('effect')
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
+  xlab('correlation.coef') +
+  ylab('coverage') +
+  ggtitle("Coverage of nominal 95% CI. Nominal = based on delta-SE?")
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.model.SE, col = "model. SE")) +
+  xlab('correlation.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NDE SE's")
+ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.model.SE, col = "model. SE")) +
+  xlab('correlation.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NIE SE's")
+
+knitr::kable(to.plot, col.names = c("interaction.coefficient", "true.nde", "true.nie", "est.nde", "est.nie", 
+                                    "nde.emp.SE", "nie.emp.SE", "nde.model.SE", "nie.model.SE", "nde.coverage", "nie.coverage"))
+
+
+
+
+
+
+
+
+
+
+
 
 n <- 1000 # Size of data
 S <- 100 # Number of replicates
@@ -37,10 +126,6 @@ nde.S <- numeric(S) # True NDE
 Z.coefs = c(a0 = -1, a1 = 0.01) 
 M.coefs = c(b0 = 20, b1 = 40, b2 = 1, b3 = 0)
 Y.coefs = c(t0 = 10, t1 = 30, t2 = 2, t3=2, t4 = 2, t5 = 0, t6 = 0, t7 = 0)
-
-Z.coefs = c(a0 = -3.416096, a1 = 0.036231) 
-M.coefs = c(b0 = -1.6507546, b1 = 0.2683970, b2 = 0.0065543, b3 = 0)
-Y.coefs = c(t0 = -3.7220626, t1 = 0.2763912, t2 = 1.4729651, t3=-1, t4 = 0.0283196, t5 = 0, t6 = 0, t7 = 0)
 
 # Simulations:
 set.seed(4352)
@@ -88,18 +173,6 @@ NIE.string = paste("True NIE: ", round(mean(nie.S), 4), " Est. NIE: ", round(mea
 NDE.string = paste("True NDE: ", round(mean(nde.S), 4), " Est. NDE: ", round(mean(effekter.nde), digits = 4), " Avg. CI width: (", round(mean(CI.nde.lower), digits = 4), "; ", round(mean(CI.nde.upper), digits = 4), ")", sep = "") 
 NIE.string
 NDE.string
-
-
-Z.coefs = c(a0 = -3.416096, a1 = 0.036231) 
-M.coefs = c(b0 = -1.6507546, b1 = 0.2683970, b2 = 0.0065543, b3 = 0)
-Y.coefs = c(t0 = -3.7220626, t1 = 0.2763912, t2 = 1.4729651, t3=-1, t4 = 0.0283196, t5 = 0, t6 = 0, t7 = 0)
-
-Z.star <- Z.coefs["a0"] + Z.coefs["a1"]*X + z.epsilon
-Z <- ifelse(Z.star>0, 1, 0)
-M.star <- M.coefs["b0"] + M.coefs["b1"]*Z + M.coefs["b2"]*X + m.epsilon
-M <- ifelse(M.star > 0, 1, 0)
-Y.star <- Y.coefs["t0"] + Y.coefs["t1"]*Z + Y.coefs["t2"]*M + Y.coefs["t3"]*Z*M + Y.coefs["t4"]*X + y.epsilon
-Y <- ifelse(Y.star > 0, 1, 0)
 
 m.model <- glm(M ~ Z + X, family=binomial(link='probit')) 
 y.model <- glm(Y ~ Z + M + M*Z+ X, family=binomial(link='probit'))

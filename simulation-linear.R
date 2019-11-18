@@ -1,7 +1,7 @@
 library(ggplot2)
 library(rsimsum)
 
-corr.coef = seq(-0.5,0.5, 0.05)
+corr.coef = seq(-0.5,0.5, 0.02)
 result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
 true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
 n.true.effect = 10000000
@@ -57,38 +57,38 @@ save(to.plot, file="to-plot3.RData") # store the results
 load("to-plot3.RData")# read true.effects
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nde.true, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nie.true, col = "NIE")) +
   xlab('correlation.coef') +
   ylab('effect') +
   expand_limits(y=0)
 ggplot() + 
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
-  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nde-nde.emp.SE, ymax=est.nde+nde.emp.SE), linetype=2, alpha=0.1) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nde.est, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nde.true, col = "true NDE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect')
 ggplot() + 
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
-  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nie-nie.emp.SE, ymax=est.nie+nie.emp.SE), linetype=2, alpha=0.1) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nie.est, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=corr, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect')
 ggplot() + 
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage, col = "NDE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nde.coverage, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nie.coverage, col = "NIE")) +
   xlab('correlation.coef') +
   ylab('coverage') +
   ggtitle("Coverage of nominal 95% CI. Nominal = based on delta-SE?")
 ggplot() + 
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.emp.SE, col = "emp. SE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.model.SE, col = "model. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nde.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nde.model.SE, col = "model. SE")) +
   xlab('correlation.coef') +
   ylab('SE') +
   ggtitle("Comparison of NDE SE's")
 ggplot() + 
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.emp.SE, col = "emp. SE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.model.SE, col = "model. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nie.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=corr, y = nie.model.SE, col = "model. SE")) +
   xlab('correlation.coef') +
   ylab('SE') +
   ggtitle("Comparison of NIE SE's")
