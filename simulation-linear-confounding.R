@@ -2,7 +2,7 @@ library(ggplot2)
 library(rsimsum)
 
 rhos = seq(-0.5,0.5, 0.02)
-corr.coef = 0.5
+corr.coef = 0.25
 result = vector(mode = "list", length = length(rhos))  #preallocate simulation result list
 
 set.seed(4235)
