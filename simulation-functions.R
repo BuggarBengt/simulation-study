@@ -16,7 +16,7 @@ calc.nde.probit = function(x, b, t) { #ekv. 11 in article
 }
 
 calc.nie.probit = function(x, b, t) { #ekv. 12 in article
-  first.factor = pnorm(t["I"] + t["Z"] + t["M"] + t["ZM"] + (t["X"] + t["ZX"] + t["ZM"] + t["ZMX"]) * x) - pnorm(t["I"] + t["Z"] + (t["X"] + t["ZX"])*x)
+  first.factor = pnorm(t["I"] + t["Z"] + t["M"] + t["ZM"] + (t["X"] + t["ZX"] + t["MX"] + t["ZMX"]) * x) - pnorm(t["I"] + t["Z"] + (t["X"] + t["ZX"])*x)
   second.factor = pnorm(b["I"] + b["Z"] + (b["X"] + b["ZX"]) * x) - pnorm(b["I"] + b["X"] * x)
   return(first.factor * second.factor)
 }

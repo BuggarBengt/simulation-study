@@ -16,8 +16,8 @@ for (i in 1:length(true.effects)) { #Calculate true effects for given scenario w
                                             outcome.mediator.type = "probit")
   print(i)
 }
-
 save(true.effects, file="true.effects.probit.RData") # store the true.effects
+
 
 set.seed(4235)
 tmp <- tempfile() # time simulations
@@ -41,9 +41,9 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
 Rprof()
 summaryRprof(tmp)
 
-save(true.effects, file="true.effects.probit100.RData") # store the true.effects
+save(true.effects, file="result.probit100.RData") # store the result
 load("true.effects.probit.RData")# read true.effects
-load("true.effects.probit100.RData")# read true.effects
+load("result.probit100.RData")# read result
 
 result.summary.NDE = vector(mode = "list", length = length(result))
 result.summary.NIE = vector(mode = "list", length = length(result))
