@@ -15,7 +15,7 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                covariate.parameters = list(c(8, 4.5)),
                                true.exposure.coefs =  c(I = -0.4, X = 0.01),
                                true.mediator.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0),
-                               true.outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef, X = 0.05),
+                               true.outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef, X = 0.05, ZX = 0, MX = 0, ZMX = 0),
                                outcome.mediator.type = "linear",
                                mediator.outcome.corr = rhos[i],
                                sd.exposure = 1,
