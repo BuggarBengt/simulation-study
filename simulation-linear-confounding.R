@@ -2,7 +2,7 @@ library(ggplot2)
 library(rsimsum)
 
 rhos = seq(-0.5,0.5, 0.02)
-corr.coef = -0.25
+corr.coef = 0.2
 result = vector(mode = "list", length = length(rhos))  #preallocate simulation result list
 
 set.seed(4235)
@@ -28,7 +28,7 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
 Rprof()
 summaryRprof(tmp)
 
-save(result, file="result.confounding-fdfs5.RData") # store the results
+save(result, file="result.confounding0.2.RData") # store the results
 load("true.effects.RData")# read true.effects
 load("result.confounding-0.25.RData")# read results
 test=true.effects

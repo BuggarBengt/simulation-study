@@ -1,5 +1,8 @@
 library(ggplot2)
 library(rsimsum)
+library(devtools)
+install_github("wrathematics/openblasctl")
+library(openblasctl)
 
 corr.coef = seq(-0.5,0.5, 0.02)
 result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
@@ -15,10 +18,10 @@ for (i in 1:length(true.effects)) { #Calculate true effects for given scenario w
 }
 
 set.seed(4235)
-tmp <- tempfile() # time simulations
-Rprof(tmp)
+openblas_set_num_threads(1)
+start_time = Sys.time()
 for (i in 1:length(result)) { # run simulations while increasing interaction effect
-  result[[i]] = run.simulation(iterations = 100000,
+  result[[i]] = run.simulation(iterations = 1000,
                                n = 1000,
                                covariate.models = c("gamma"),
                                covariate.parameters = list(c(8, 4.5)),
@@ -33,8 +36,8 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                misspecified.outcome.formula = "Y~Z+M+X")
   print(i/length(result))
 }
-Rprof()
-summaryRprof(tmp)
+end_time = Sys.time()
+end_time - start_time
 
 save(true.effects, file="true.effects3.RData") # store the true.effects
 save(result, file="result3.RData") # store the results
