@@ -1,5 +1,5 @@
-
-corr.coef = seq(-0.5,0.5, 0.02)
+load("true.effects.RData")
+corr.coef = seq(-50,50, 2)/100
 result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
 true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
 n.true.effect = 10000000
