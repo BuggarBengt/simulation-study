@@ -40,7 +40,7 @@ Estimated mediator model was set to the correct one. Estimated outcome model was
 
 ```{r echo=F}
 library(ggplot2)
-load("to-plot3.RData")# read true.effects
+load("to-plot.RData")# read true.effects
 knitr::kable(to.plot, col.names = colnames(to.plot))
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
