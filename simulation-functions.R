@@ -167,6 +167,14 @@ create.data.frame.for.plotting = function(result.summary.NDE, result.summary.NIE
   return(to.plot)
 }
 
+create.data.frame.for.plotting.confounding = function(interaction.coef, result.summaries.NDE, result.summaries.NIE, rhos) {
+  res.matrix = matrix(NA, nrow = 0, ncol = 14)
+  for (i in 1:length(result.summaries.NDE)) {
+    mat = cbind(i.coef = interaction.coef[i], create.data.frame.for.plotting(result.summaries.NDE[[1]], result.summaries.NDE[[1]], rhos))
+    rbind(res.matrix, mat)
+  }
+  return(res.matrix)
+}
 
 
 
