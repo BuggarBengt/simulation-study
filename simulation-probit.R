@@ -1,30 +1,31 @@
 library(ggplot2)
 library(rsimsum)
+# 
+# corr.coef = seq(-0.5,0.5, 0.04)
+# result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
+# true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
+# n.true.effect = 10000000
+# set.seed(4235)
+# for (i in 1:length(true.effects)) { #Calculate true effects for given scenario while increasing interaction effect
+#   true.effects[[i]] = simulate.true.effects(n = n.true.effect,
+#                                             covariate.models = "x-gamma",
+#                                             covariate.parameters = list(c(104, 7, 4.5)),
+#                                             exposure.coefs = c(I = -3.416096, X = 0.036231),
+#                                             mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
+#                                             outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = corr.coef[i], X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
+#                                             outcome.mediator.type = "probit")
+#   print(i)
+# }
+# save(true.effects, file="true.effects.probit.RData") # store the true.effects
+# 
 
 corr.coef = seq(-0.5,0.5, 0.04)
 result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
-true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
-n.true.effect = 10000000
 set.seed(4235)
-for (i in 1:length(true.effects)) { #Calculate true effects for given scenario while increasing interaction effect
-  true.effects[[i]] = simulate.true.effects(n = n.true.effect,
-                                            covariate.models = "x-gamma",
-                                            covariate.parameters = list(c(104, 7, 4.5)),
-                                            exposure.coefs = c(I = -3.416096, X = 0.036231),
-                                            mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
-                                            outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = corr.coef[i], X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
-                                            outcome.mediator.type = "probit")
-  print(i)
-}
-save(true.effects, file="true.effects.probit.RData") # store the true.effects
-
-
-set.seed(4235)
-tmp <- tempfile() # time simulations
-Rprof(tmp)
+start_time = Sys.time()
 for (i in 1:length(result)) { # run simulations while increasing interaction effect
-  result[[i]] = run.simulation(iterations = 100,
-                               n = 100,
+  result[[i]] = run.simulation(iterations = 50000,
+                               n = 1000,
                                covariate.models = c("x-gamma"),
                                covariate.parameters = list(c(104, 8, 4.5)),
                                true.exposure.coefs = c(I = -3.416096, X = 0.036231),
@@ -38,12 +39,12 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                misspecified.outcome.formula = "Y~Z+M+X")
   print(i/length(result))
 }
-Rprof()
-summaryRprof(tmp)
+end_time = Sys.time()
+end_time - start_time
 
-save(true.effects, file="result.probit100.RData") # store the result
+save(result, file="result.probit50000.RData") # store the result
 load("true.effects.probit.RData")# read true.effects
-load("result.probit100.RData")# read result
+load("result.probit1000.RData")# read result
 
 result.summary.NDE = vector(mode = "list", length = length(result))
 result.summary.NIE = vector(mode = "list", length = length(result))
@@ -53,8 +54,8 @@ for (i in 1:length(result)) { # get different statistics of our estimates using 
 }
 
 to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, corr.coef)
-save(to.plot, file="to-plot.probit100.RData") # store the results
-load("to-plot.probit100.RData")# read true.effects
+save(to.plot, file="to-plot.probit50000.RData") # store the results
+load("to-plot.probit50000.RData")# read true.effects
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true, col = "NDE")) +
