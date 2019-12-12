@@ -6,6 +6,7 @@ library(openblasctl)
 
 corr.coef = seq(-0.5,0.5, 0.02)
 result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
+<<<<<<< HEAD
 true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
 n.true.effect = 10000000
 set.seed(4235)
@@ -17,6 +18,10 @@ for (i in 1:length(true.effects)) { #Calculate true effects for given scenario w
                                      outcome.mediator.type = "linear")
 }
   
+=======
+load("true.effects.RData")# read true.effects
+
+>>>>>>> b15dd47e504ec2ceed93edc2b9106eab2752b733
 set.seed(4235)
 openblas_set_num_threads(1)
 start_time = Sys.time()
@@ -40,9 +45,8 @@ end_time = Sys.time()
 end_time - start_time
 
 save(true.effects, file="true.effects3.RData") # store the true.effects
-save(result, file="result3.RData") # store the results
+save(result, file="resultdsfs.RData") # store the results
 load("true.effects.RData")# read true.effects
-load("true.effects3.RData")# read true.effects
 load("result.RData")# read results  s=1000
 load("result2.RData")# read results s=10000
 load("result3.RData")# read results s=100000
@@ -50,14 +54,14 @@ load("result3.RData")# read results s=100000
 result.summary.NDE = vector(mode = "list", length = length(result))
 result.summary.NIE = vector(mode = "list", length = length(result))
 for (i in 1:length(result)) { # get different statistics of our estimates using rsimsum for each scenario
-  result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = mean(true.effects[[i]][, 2]), se = "SE.nde")
-  result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = mean(true.effects[[i]][, 1]), se = "SE.nie")
+  result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = true.effects[i, 3], se = "SE.nde")
+  result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = true.effects[i, 2], se = "SE.nie")
 }
 
 to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, corr.coef)
 
 save(to.plot, file="to-plot3.RData") # store the results
-load("to-plot3.RData")# read true.effects
+load("to-plot3.RData")
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true, col = "NDE")) +

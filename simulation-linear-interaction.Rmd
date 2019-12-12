@@ -41,10 +41,17 @@ Estimated mediator model was set to the correct one. Estimated outcome model was
 In this scenario, changing the interaction effect has a higher effect on the direct effect.
 ```{r echo=F}
 library(ggplot2)
+<<<<<<< HEAD:simulation-linear-interaction.Rmd
 load("to-plot3.RData")# read data
 knitr::kable(to.plot, col.names = colnames(to.plot))
 ggplot() + #högre effekt på true nde av att öka korrelationen
   ggtitle("True effects when increasing interaction") +
+=======
+load("to-plot.RData")# read true.effects
+knitr::kable(to.plot, col.names = colnames(to.plot))
+
+ggplot() + #mycket högre effekt på true nde av att öka korrelationen
+>>>>>>> b15dd47e504ec2ceed93edc2b9106eab2752b733:simulation-study.Rmd
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
   xlab('interaction.coef') +
