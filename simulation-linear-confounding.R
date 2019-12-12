@@ -28,24 +28,22 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
 Rprof()
 summaryRprof(tmp)
 
-save(result, file="result.confounding0.2.RData") # store the results
+save(result, file="result.confounding0.fds2.RData") # store the results
 load("true.effects.RData")# read true.effects
-load("result.confounding-0.25.RData")# read results
-test=true.effects
-cbind(test, true.effects)
+load("result.confounding-0.2.RData")# read results
 
 result.summary.NDE = vector(mode = "list", length = length(result))
 result.summary.NIE = vector(mode = "list", length = length(result))
 for (i in 1:length(result)) { # get different statistics of our estimates using rsimsum for each scenario
-  result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = mean(true.effects[[51]][, 2]), se = "SE.nde")
-  result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = mean(true.effects[[51]][, 1]), se = "SE.nie")
+  result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = mean(true.effects[[16]][, 2]), se = "SE.nde")
+  result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = mean(true.effects[[16]][, 1]), se = "SE.nie")
 }
 
 to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, rhos)
 colnames(to.plot)[1] = "corr"
 
-save(to.plot, file="to-plot-confounding-0.25.RData") # store the results
-load("to-plot-confounding-0.25.RData")# read true.effects
+save(to.plot, file="to-plot-confounding-0.2.RData") # store the results
+load("to-plot-confounding-0.2.RData")# read true.effects
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot), aes(x=corr, y = nde.true, col = "NDE")) +
