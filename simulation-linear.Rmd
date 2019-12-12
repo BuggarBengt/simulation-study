@@ -29,6 +29,7 @@ Table: Variables used for simulations
 ```{r echo=F, include = F}
   library(ggplot2)
   library(ggdag)
+  library(gridExtra)
 ```
 
 
@@ -94,9 +95,9 @@ int.nde = ggplot() +
         legend.title = element_text(size = 7),
         legend.text = element_text(size = 7),
         legend.position = c(0.86, 0.22)) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
-  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nde-nde.emp.SE, ymax=est.nde+nde.emp.SE), linetype=2, alpha=0.1) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.est, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true, col = "true NDE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
   xlab('interaction.coef') +
   ylab('effect')
 int.nie = ggplot() + 
@@ -105,9 +106,9 @@ int.nie = ggplot() +
         legend.title = element_text(size = 7),
         legend.text = element_text(size = 7),
         legend.position = c(0.86, 0.22)) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
-  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nie-nie.emp.SE, ymax=est.nie+nie.emp.SE), linetype=2, alpha=0.1) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.est, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
   xlab('interaction.coef') +
   ylab('effect')
 c.nde = ggplot() + 
@@ -141,8 +142,8 @@ Total effect is unbiased:
 int.total = ggplot() +
   ggtitle("Total effect(TE) (misspecified model)") +
   theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom") +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde+true.nie, col = "True TE")) +
-  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde+est.nie, col = "Estimated TE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true+nie.true, col = "True TE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.est+nie.est, col = "Estimated TE")) +
   xlab('interaction.coef') +
   ylab('total effect')
 
@@ -233,39 +234,39 @@ to.plot.conf.0.5 = to.plot
 load("to-plot3.RData")
 rhos = seq(-0.5,0.5, 0.02)
 nde1 = ggplot() + 
-  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==-0.20, "est.nde"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
+  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==-0.20, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
   geom_line(data = data.frame(to.plot.conf.n0.2), aes(x=corr, y = nde.est, col = "NDE M-Y")) +
   geom_line(data = data.frame(to.plot.conf.n0.2), aes(x=corr, y = nde.true, col = "true NDE")) +
   geom_ribbon(data = data.frame(to.plot.conf.n0.2), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
-  xlab('correlation') +
+  xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM interaction = -0.2") +
+  ggtitle("ZM.corr = -0.2") +
   theme(legend.position = "none")
 nde2 = ggplot() + 
-  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0, "est.nde"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
+  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
   geom_line(data = data.frame(to.plot.conf.0), aes(x=corr, y = nde.est, col = "NDE M-Y")) +
   geom_line(data = data.frame(to.plot.conf.0), aes(x=corr, y = nde.true, col = "true NDE")) +
   geom_ribbon(data = data.frame(to.plot.conf.0), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
-  xlab('correlation') +
+  xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM interaction = 0") 
+  ggtitle("ZM.corr = 0") 
 nde3 = ggplot() + 
-  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.2, "est.nde"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
+  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.2, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
   geom_line(data = data.frame(to.plot.conf.0.2), aes(x=corr, y = nde.est, col = "NDE M-Y")) +
   geom_line(data = data.frame(to.plot.conf.0.2), aes(x=corr, y = nde.true, col = "true NDE")) +
   geom_ribbon(data = data.frame(to.plot.conf.0.2), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
-  xlab('correlation') +
+  xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM interaction = 0.2")+
+  ggtitle("ZM.corr = 0.2")+
   theme(legend.position = "none")
 nde4 = ggplot() + 
-  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.5, "est.nde"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
+  geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.5, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
   geom_line(data = data.frame(to.plot.conf.0.5), aes(x=corr, y = nde.est, col = "NDE M-Y")) +
   geom_line(data = data.frame(to.plot.conf.0.5), aes(x=corr, y = nde.true, col = "true NDE")) +
   geom_ribbon(data = data.frame(to.plot.conf.0.5), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
-  xlab('correlation') +
+  xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM interaction = 0.5")+
+  ggtitle("ZM.corr = 0.5")+
   theme(legend.position = "none")
 grid.arrange(nde1, nde2, nde3, nde4, nrow = 2)
 ```

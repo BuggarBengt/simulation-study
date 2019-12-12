@@ -4,24 +4,10 @@ library(devtools)
 install_github("wrathematics/openblasctl")
 library(openblasctl)
 
-corr.coef = seq(-0.5,0.5, 0.02)
+corr.coef = seq(-50,50, 2)/100
 result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
-<<<<<<< HEAD
-true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
-n.true.effect = 10000000
-set.seed(4235)
-for (i in 1:length(true.effects)) { #Calculate true effects for given scenario while increasing interaction effect
-  true.effects[[i]] = simulate.true.effects(n = n.true.effect,
-                                     exposure.coefs =  c(I = -0.4, X = 0.01),
-                                     mediator.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0),
-                                     outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef[i], X = 0.05),
-                                     outcome.mediator.type = "linear")
-}
-  
-=======
 load("true.effects.RData")# read true.effects
 
->>>>>>> b15dd47e504ec2ceed93edc2b9106eab2752b733
 set.seed(4235)
 openblas_set_num_threads(1)
 start_time = Sys.time()
