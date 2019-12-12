@@ -35,7 +35,7 @@ Table: Variables used for simulations:
 * $\theta_3=0.5$
 * $\theta_4=0.05$
 
-Estimated mediator model was set to the correct one. Estimated outcome model was linear but misspecified without $ZM$ interaction: $Y\sim Z+M+X$.
+Estimated mediator model was set to the correct one. Bias was induced by changing error term correlation (between $\omega$ and $\epsilon$).
 
 ## Results
 
@@ -44,7 +44,7 @@ library(ggplot2)
 load("to-plot-confounding.RData")
 knitr::kable(to.plot, col.names = colnames(to.plot))
 
-ggplot() + #mycket högre effekt på true nde av att öka korrelationen
+ggplot() + 
   geom_line(data = data.frame(to.plot), aes(x=corr, y = true.nde, col = "NDE")) +
   geom_line(data = data.frame(to.plot), aes(x=corr, y = true.nie, col = "NIE")) +
   xlab('correlation.coef') +

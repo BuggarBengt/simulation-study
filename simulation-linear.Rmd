@@ -1,0 +1,229 @@
+---
+title: "simulation summary"
+author: "Joakim Wallmark"
+date: "11/2/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Simulation study
+
+## Goal
+Parametric estimators for natural direct- and indirect effects are implemented in the sensmediation package. The goal is to investigate and compare bias from model misspecification (interaction term missing in outcome model) with bias from mediator-outcome confounding through simulations.
+
+## Simulation scenarios
+Simulations of bias were done with model misspecification and confounding in separate comparable scenarios. Mediator and outcome were made continous and similar simulations using binary mediator/outcome will be done later.
+
+variable | type | true model
+---------|----- | ----------------
+X(additional covariate) | continous | $X\sim gamma(8, 4.5)$
+Z(exposure) | binary | $Z=I(Z*>0)$ where $Z*\sim U_0+U_1X+N(0, 1)$
+M(mediator) | continous | $M\sim B_0+B_1Z+B_2X+N(0, 1)$
+Y(outcome) | continous | $Y\sim \theta_0+\theta_1Z+\theta_2M+\theta_3ZM+\theta_4X+N(0, 1)$
+
+Table: Variables used for simulations
+
+```{r echo=F, include = F}
+  library(ggplot2)
+  library(ggdag)
+```
+
+
+```{r echo=F, fig.width=4.2, fig.height=4}
+  dag  <- dagify(Z~X,
+                 M~Z+X,
+                 Y~Z+M+X)
+  ggdag(dag) + ggtitle("DAG showing data generating process") + 
+    theme(plot.title = element_text(size = 9, face = "bold"), 
+        axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank())
+```
+
+
+### Simulation scenarios (model misspecification)
+Parameter values used for simulations:
+
+* $U_0=-0.4$
+* $U_1=0.01$
+* $B_0=3$
+* $B_1=2$
+* $B_2=0.05$
+* $\theta_0=5$
+* $\theta_1=1$
+* $\theta_2=0.5$
+* $\theta_3=$ varied[-0.5, 0.5]
+* $\theta_4=0.05$
+
+Estimated mediator model was set to the correct one. Estimated outcome model was linear but misspecified without $ZM$ interaction: $Y\sim Z+M+X$.
+
+### Simulation scenarios (mediator-outcome confounding)
+
+Parameter values used for simulations:
+
+$corr(\omega, \epsilon)=$varied (-0.5,0.5)
+
+* $U_0=-0.4$
+* $U_1=0.01$
+* $B_0=3$
+* $B_1=2$
+* $B_2=0.05$
+* $\theta_0=5$
+* $\theta_1=1$
+* $\theta_2=0.5$
+* $\theta_3=0.5$
+* $\theta_4=0.05$
+
+Estimated mediator model was set to the correct one. Bias was induced by changing error term correlation (between $\omega$ and $\epsilon$).
+
+## Results
+Bias of NDE and NIE changes linearly as we change confounding or interaction strength in the respective scenarios:
+
+```{r echo=F}
+library(gridExtra)
+load("to-plot-confounding.RData")
+to.plot.c = to.plot
+load("to-plot3.RData")
+
+int.nde = ggplot() + 
+  ggtitle("True vs estimated NDE(missing int.coef.)") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.position = c(0.86, 0.22)) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nde-nde.emp.SE, ymax=est.nde+nde.emp.SE), linetype=2, alpha=0.1) +
+  xlab('interaction.coef') +
+  ylab('effect')
+int.nie = ggplot() + 
+  ggtitle("True vs estimated NIE(missing int.coef.)") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.position = c(0.86, 0.22)) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nie-nie.emp.SE, ymax=est.nie+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('interaction.coef') +
+  ylab('effect')
+c.nde = ggplot() + 
+  ggtitle("True vs estimated NDE(confounding)") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.position = c(0.86, 0.8)) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = est.nde, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = true.nde, col = "true NDE")) +
+  geom_ribbon(data = data.frame(to.plot.c), aes(x=corr, ymin=est.nde-nde.emp.SE, ymax=est.nde+nde.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('effect')
+c.nie = ggplot() + 
+  ggtitle("True vs estimated NIE(confounding)") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.position = c(0.15, 0.8)) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = est.nie, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = true.nie, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot.c), aes(x=corr, ymin=est.nie-nie.emp.SE, ymax=est.nie+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('total effect')
+grid.arrange(int.nde, int.nie, c.nde, c.nie, nrow = 2)
+```
+
+Total effect is unbiased:
+
+```{r echo=F}
+int.total = ggplot() +
+  ggtitle("Total effect(TE) (misspecified model)") +
+  theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom") +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde+true.nie, col = "True TE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde+est.nie, col = "Estimated TE")) +
+  xlab('interaction.coef') +
+  ylab('total effect')
+
+c.total = ggplot() + 
+  ggtitle("Total effect(TE) (confounding)") +
+  theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom") +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = true.nde+true.nie, col = "True TE")) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = est.nde+est.nie, col = "Estimated TE")) +
+  xlab('correlation.coef') +
+  ylab('total effect') +
+  expand_limits(y=c(5, 6))
+grid.arrange(int.total, c.total, nrow = 1)
+```
+
+When missing the interaction term in the outcome model, the empirical data shows that we tend to underestimate the SE's of our estimates as the interaction strength increases. In the case of unobserved confounding, the SE's are still pretty accurate:
+
+```{r echo=F}
+c.SE.NDE = ggplot() + 
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = nde.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = nde.model.SE, col = "model. SE")) +
+  xlab('correlation.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NDE SE's") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7))
+c.SE.NIE = ggplot() + 
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = nie.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = nie.model.SE, col = "model. SE")) +
+  xlab('correlation.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NIE SE's")+
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7))
+int.SE.NDE = ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.model.SE, col = "model. SE")) +
+  xlab('interaction.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NDE SE's")+
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7))
+int.SE.NIE = ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.model.SE, col = "model. SE")) +
+  xlab('interaction.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NIE SE's")+
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7))
+grid.arrange(int.SE.NDE, int.SE.NIE, c.SE.NDE, c.SE.NIE, nrow = 2)
+```
+
+As expected coverage decreases as the interaction get stronger when we misspecify our outcome model. The same happens for larger confounding. Since a big n(1000) was used for simulations we get bad coverage even when the bias is low:
+
+```{r echo=F, fig.width=5, fig.height=3}
+cov.c = ggplot() + 
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = nde.coverage, col = "NDE")) +
+  geom_line(data = data.frame(to.plot.c), aes(x=corr, y = nie.coverage, col = "NIE")) +
+  xlab('correlation.coef') +
+  ylab('coverage') +
+  ggtitle("Coverage of nominal 95% CI") +
+  theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom")
+cov.int = ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
+  xlab('interaction.coef') +
+  ylab('coverage') +
+  ggtitle("Coverage of nominal 95% CI") +
+  theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom")
+grid.arrange(cov.int , cov.c, nrow = 1)
+```
+
+
+
+
+
+
+
+
+

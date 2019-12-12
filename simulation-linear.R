@@ -16,12 +16,12 @@ for (i in 1:length(true.effects)) { #Calculate true effects for given scenario w
                                      outcome.coefs = c(I = 5, Z = 1, M = 0.5, ZM = corr.coef[i], X = 0.05),
                                      outcome.mediator.type = "linear")
 }
-
+  
 set.seed(4235)
 openblas_set_num_threads(1)
 start_time = Sys.time()
 for (i in 1:length(result)) { # run simulations while increasing interaction effect
-  result[[i]] = run.simulation(iterations = 1000,
+  result[[i]] = run.simulation(iterations = 100,
                                n = 1000,
                                covariate.models = c("gamma"),
                                covariate.parameters = list(c(8, 4.5)),

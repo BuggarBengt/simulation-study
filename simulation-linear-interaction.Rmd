@@ -38,46 +38,52 @@ Estimated mediator model was set to the correct one. Estimated outcome model was
 
 ## Results
 
+In this scenario, changing the interaction effect has a higher effect on the direct effect.
 ```{r echo=F}
 library(ggplot2)
-load("to-plot3.RData")# read true.effects
+load("to-plot3.RData")# read data
 knitr::kable(to.plot, col.names = colnames(to.plot))
-load("to-plot3.RData")# read true.effects
-
-ggplot() + #mycket högre effekt på true nde av att öka korrelationen
+ggplot() + #högre effekt på true nde av att öka korrelationen
+  ggtitle("True effects when increasing interaction") +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "NDE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "NIE")) +
-  xlab('correlation.coef') +
+  xlab('interaction.coef') +
   ylab('effect') +
   expand_limits(y=0)
+```
+
+
+```{r echo=F}
 ggplot() + 
+  ggtitle("True vs estimated NDE") +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nde, col = "est NDE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nde, col = "true NDE")) +
   geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nde-nde.emp.SE, ymax=est.nde+nde.emp.SE), linetype=2, alpha=0.1) +
-  xlab('correlation.coef') +
+  xlab('interaction.coef') +
   ylab('effect')
 ggplot() + 
+  ggtitle("True vs estimated NIE") +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = est.nie, col = "est NIE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = true.nie, col = "true NIE")) +
   geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=est.nie-nie.emp.SE, ymax=est.nie+nie.emp.SE), linetype=2, alpha=0.1) +
-  xlab('correlation.coef') +
+  xlab('interaction.coef') +
   ylab('effect')
 ggplot() + 
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage, col = "NDE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
-  xlab('correlation.coef') +
+  xlab('interaction.coef') +
   ylab('coverage') +
   ggtitle("Coverage of nominal 95% CI. Nominal = based on delta-SE?")
 ggplot() + 
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.emp.SE, col = "emp. SE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.model.SE, col = "model. SE")) +
-  xlab('correlation.coef') +
+  xlab('interaction.coef') +
   ylab('SE') +
   ggtitle("Comparison of NDE SE's")
 ggplot() + 
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.emp.SE, col = "emp. SE")) +
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.model.SE, col = "model. SE")) +
-  xlab('correlation.coef') +
+  xlab('interaction.coef') +
   ylab('SE') +
   ggtitle("Comparison of NIE SE's")
 ```
