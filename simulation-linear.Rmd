@@ -79,6 +79,7 @@ $corr(\omega, \epsilon)=$varied (-0.5,0.5)
 * $\theta_4=0.05$
 
 Estimated mediator model was set to the correct one. Bias was induced by changing error term correlation (between $\omega$ and $\epsilon$).
+\newpage
 
 ## Results
 Bias of NDE and NIE changes linearly as we change confounding or interaction strength in the respective scenarios:
@@ -136,9 +137,10 @@ c.nie = ggplot() +
 grid.arrange(int.nde, int.nie, c.nde, c.nie, nrow = 2)
 ```
 
-Total effect is unbiased:
+\newpage
+Total effect is unbiased because the NDE and NIE biases will cancel eachother out:
 
-```{r echo=F}
+```{r echo=F, fig.height=3}
 int.total = ggplot() +
   ggtitle("Total effect(TE) (misspecified model)") +
   theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom") +
@@ -199,7 +201,7 @@ int.SE.NIE = ggplot() +
         legend.text = element_text(size = 7))
 grid.arrange(int.SE.NDE, int.SE.NIE, c.SE.NDE, c.SE.NIE, nrow = 2)
 ```
-
+\newpage
 As expected coverage decreases as the interaction get stronger when we misspecify our outcome model. The same happens for larger confounding. Since a big n(1000) was used for simulations we get bad coverage even when the bias is low:
 
 ```{r echo=F, fig.width=5, fig.height=3}
@@ -222,7 +224,7 @@ grid.arrange(cov.int , cov.c, nrow = 1)
 
 Comparison between confounding and model misspecification bias for different interaction strengths between Z and M. Example: In this scenario, when the true interaction coefficient is 0.5, we need a correlation between Z and M of about -0.25 to achieve the same amount of bias from confounding as we would get from missing the interaction term in our outcome model:
 
-```{r echo=F}
+```{r echo=F, fig.height=4}
 load("to-plot-confounding-0.2.RData")
 to.plot.conf.n0.2 = to.plot
 load("to-plot-confounding0.RData")
@@ -240,7 +242,7 @@ nde1 = ggplot() +
   geom_ribbon(data = data.frame(to.plot.conf.n0.2), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM.corr = -0.2") +
+  ggtitle("ZM interaction coef = -0.2") +
   theme(legend.position = "none")
 nde2 = ggplot() + 
   geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
@@ -249,7 +251,7 @@ nde2 = ggplot() +
   geom_ribbon(data = data.frame(to.plot.conf.0), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM.corr = 0") 
+  ggtitle("ZM interaction coef = 0") 
 nde3 = ggplot() + 
   geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.2, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
   geom_line(data = data.frame(to.plot.conf.0.2), aes(x=corr, y = nde.est, col = "NDE M-Y")) +
@@ -257,7 +259,7 @@ nde3 = ggplot() +
   geom_ribbon(data = data.frame(to.plot.conf.0.2), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM.corr = 0.2")+
+  ggtitle("ZM interaction coef = 0.2")+
   theme(legend.position = "none")
 nde4 = ggplot() + 
   geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.5, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
@@ -266,10 +268,63 @@ nde4 = ggplot() +
   geom_ribbon(data = data.frame(to.plot.conf.0.5), aes(x=corr, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
   xlab('correlation.coef') +
   ylab('effect') +
-  ggtitle("ZM.corr = 0.5")+
+  ggtitle("ZM interaction coef = 0.5")+
   theme(legend.position = "none")
 grid.arrange(nde1, nde2, nde3, nde4, nrow = 2)
 ```
+
+\newpage
+Because of linearity and same total effect, the correlation needed to match the bias of an outcome model missing an interaction term with a coefficient size of 0.5 is -0.25 for for the NIE too:
+
+```{r echo=F, fig.height=4}
+load("to-plot-confounding-0.2.RData")
+to.plot.conf.n0.2 = to.plot
+load("to-plot-confounding0.RData")
+to.plot.conf.0 = to.plot
+load("to-plot-confounding0.2.RData")
+to.plot.conf.0.2 = to.plot
+load("to-plot-confounding0.5.RData")
+to.plot.conf.0.5 = to.plot
+load("to-plot3.RData")
+rhos = seq(-0.5,0.5, 0.02)
+nie1 = ggplot() + 
+  geom_line(data = data.frame(nie.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==-0.20, "nie.est"], length(rhos))), aes(x=rhos, y = nie.est, col = "misspec.NIE")) +
+  geom_line(data = data.frame(to.plot.conf.n0.2), aes(x=corr, y = nie.est, col = "NIE M-Y")) +
+  geom_line(data = data.frame(to.plot.conf.n0.2), aes(x=corr, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot.conf.n0.2), aes(x=corr, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('effect') +
+  ggtitle("ZM interaction coef = -0.2") +
+  theme(legend.position = "none")
+nie2 = ggplot() + 
+  geom_line(data = data.frame(nie.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0, "nie.est"], length(rhos))), aes(x=rhos, y = nie.est, col = "misspec.NIE")) +
+  geom_line(data = data.frame(to.plot.conf.0), aes(x=corr, y = nie.est, col = "NIE M-Y")) +
+  geom_line(data = data.frame(to.plot.conf.0), aes(x=corr, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot.conf.0), aes(x=corr, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('effect') +
+  ggtitle("ZM interaction coef = 0") 
+nie3 = ggplot() + 
+  geom_line(data = data.frame(nie.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.2, "nie.est"], length(rhos))), aes(x=rhos, y = nie.est, col = "misspec.NIE")) +
+  geom_line(data = data.frame(to.plot.conf.0.2), aes(x=corr, y = nie.est, col = "NIE M-Y")) +
+  geom_line(data = data.frame(to.plot.conf.0.2), aes(x=corr, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot.conf.0.2), aes(x=corr, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('effect') +
+  ggtitle("ZM interaction coef = 0.2")+
+  theme(legend.position = "none")
+nie4 = ggplot() + 
+  geom_line(data = data.frame(nie.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==0.5, "nie.est"], length(rhos))), aes(x=rhos, y = nie.est, col = "misspec.NIE")) +
+  geom_line(data = data.frame(to.plot.conf.0.5), aes(x=corr, y = nie.est, col = "NIE M-Y")) +
+  geom_line(data = data.frame(to.plot.conf.0.5), aes(x=corr, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot.conf.0.5), aes(x=corr, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('correlation.coef') +
+  ylab('effect') +
+  ggtitle("ZM interaction coef = 0.5")+
+  theme(legend.position = "none")
+grid.arrange(nie1, nie2, nie3, nie4, nrow = 2)
+```
+
 
 
 
