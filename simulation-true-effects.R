@@ -26,7 +26,7 @@ set.seed(4235)
 for (i in 1:length(true.effects)) { #Calculate true effects for given scenario while increasing interaction effect
   true.effects[[i]] = simulate.true.effects(n = n.true.effect,
                                             covariate.models = "x-gamma",
-                                            covariate.parameters = list(c(104, 7, 4.5)),
+                                            covariate.parameters = list(c(104, 8, 4.5)),
                                             exposure.coefs = c(I = -3.416096, X = 0.036231),
                                             mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
                                             outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = corr.coef[i], X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
@@ -34,3 +34,25 @@ for (i in 1:length(true.effects)) { #Calculate true effects for given scenario w
   print(i)
 }
 save(true.effects, file="true.effects.probit.RData") # store the true.effects
+
+# Random plots
+temp = vector(length = 26)
+index= 1
+for (eff in true.effects) {
+  temp[[index]] = eff[1]  
+  index=index+1
+}
+
+temp2 = vector(length = 26)
+index= 1
+for (eff in true.effects2) {
+  temp2[[index]] = eff[1]  
+  index=index+1
+}
+
+ggplot() + 
+  geom_line(data = data.frame(x=corr.coef, y=temp), aes(x=x, y = y, col = "est NIE")) +
+  geom_line(data = data.frame(x=corr.coef, y=temp2), aes(x=x, y = y, col = "est NIE")) +
+  xlab('correlation.coef') +
+  ylab('total effect')
+

@@ -42,9 +42,9 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
 end_time = Sys.time()
 end_time - start_time
 
-save(result, file="result.probit50000.RData") # store the result
-load("true.effects.probit.RData")# read true.effects
-load("result.probit1000.RData")# read result
+save(result, file="Data/Data-probit/result.probit50000.RData") # store the result
+load("Data/Data-probit/true.effects.probit.RData")# read true.effects
+load("Data/Data-probit/result.probit50000.RData")# read result
 
 result.summary.NDE = vector(mode = "list", length = length(result))
 result.summary.NIE = vector(mode = "list", length = length(result))
@@ -54,8 +54,10 @@ for (i in 1:length(result)) { # get different statistics of our estimates using 
 }
 
 to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, corr.coef)
-save(to.plot, file="to-plot.probit50000.RData") # store the results
-load("to-plot.probit50000.RData")# read true.effects
+save(to.plot, file="Data/Data-probit/to-plot-probit50000.RData") # store the results
+load("Data/Data-probit/to-plot-probit50000.RData")# read plot data
+load("Data/Data-probit/to-plot-probit50000-wrong-true-effects.RData")# read old plot data
+load("Data/Data-probit/to-plot-probit100.RData")# read plot data
 
 ggplot() + #mycket högre effekt på true nde av att öka korrelationen
   geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true, col = "NDE")) +

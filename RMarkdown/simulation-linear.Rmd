@@ -11,18 +11,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Simulation study
 
-## Goal
+## Goal 
 Parametric estimators for natural direct- and indirect effects are implemented in the sensmediation package. The goal is to test the methods implemented in this package. We will investigate and compare bias from model misspecification (interaction term missing in outcome model) with bias from mediator-outcome confounding through simulations.
 
 ## Simulation scenarios
-Simulations of bias were done with model misspecification and confounding in separate comparable scenarios. 100000 iterations with a sample size of 1000 was used for each scenario. Mediator and outcome were made continous and similar simulations using binary mediator/outcome will be done later.
+Simulations of bias were done with model misspecification and confounding in separate comparable scenarios. 100000 iterations with a sample size of 1000 was used for each scenario. Mediator and outcome were made continuous and similar simulations using binary mediator/outcome will be done later.
 
 variable | type | true model
 ---------|----- | ----------------
-X(additional covariate) | continous | $X\sim gamma(8, 4.5)$
+X(additional covariate) | continuous | $X\sim gamma(8, 4.5)$
 Z(exposure) | binary | $Z=I(Z*>0)$ where $Z*\sim U_0+U_1X+N(0, 1)$
-M(mediator) | continous | $M\sim B_0+B_1Z+B_2X+N(0, 1)$
-Y(outcome) | continous | $Y\sim \theta_0+\theta_1Z+\theta_2M+\theta_3ZM+\theta_4X+N(0, 1)$
+M(mediator) | continuous | $M\sim B_0+B_1Z+B_2X+N(0, 1)$
+Y(outcome) | continuous | $Y\sim \theta_0+\theta_1Z+\theta_2M+\theta_3ZM+\theta_4X+N(0, 1)$
 
 Table: Variables used for simulations
 
@@ -86,9 +86,9 @@ Bias of NDE and NIE changes linearly as we change confounding or interaction str
 
 ```{r echo=F}
 library(gridExtra)
-load("to-plot-confounding.RData")
+load("../Data/Data-OLS/to-plot-confounding.RData")
 to.plot.c = to.plot
-load("to-plot3.RData")
+load("../Data/Data-OLS/to-plot3.RData")
 
 int.nde = ggplot() + 
   ggtitle("True vs estimated NDE(missing int.coef.)") +
@@ -225,15 +225,15 @@ grid.arrange(cov.int , cov.c, nrow = 1)
 Comparison between confounding and model misspecification bias for different interaction strengths between Z and M. Example: In this scenario, when the true interaction coefficient is 0.5, we need a correlation between Z and M of about -0.25 to achieve the same amount of bias from confounding as we would get from missing the interaction term in our outcome model:
 
 ```{r echo=F, fig.height=4}
-load("to-plot-confounding-0.2.RData")
+load("../Data/Data-OLS/to-plot-confounding-0.2.RData")
 to.plot.conf.n0.2 = to.plot
-load("to-plot-confounding0.RData")
+load("../Data/Data-OLS/to-plot-confounding0.RData")
 to.plot.conf.0 = to.plot
-load("to-plot-confounding0.2.RData")
+load("../Data/Data-OLS/to-plot-confounding0.2.RData")
 to.plot.conf.0.2 = to.plot
-load("to-plot-confounding0.5.RData")
+load("../Data/Data-OLS/to-plot-confounding0.5.RData")
 to.plot.conf.0.5 = to.plot
-load("to-plot3.RData")
+load("../Data/Data-OLS/to-plot3.RData")
 rhos = seq(-0.5,0.5, 0.02)
 nde1 = ggplot() + 
   geom_line(data = data.frame(nde.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==-0.20, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "misspec.NDE")) +
@@ -277,15 +277,15 @@ grid.arrange(nde1, nde2, nde3, nde4, nrow = 2)
 Because of linearity and same total effect, the correlation needed to match the bias of an outcome model missing an interaction term with a coefficient size of 0.5 is -0.25 for for the NIE too:
 
 ```{r echo=F, fig.height=4}
-load("to-plot-confounding-0.2.RData")
+load("../Data/Data-OLS/to-plot-confounding-0.2.RData")
 to.plot.conf.n0.2 = to.plot
-load("to-plot-confounding0.RData")
+load("../Data/Data-OLS/to-plot-confounding0.RData")
 to.plot.conf.0 = to.plot
-load("to-plot-confounding0.2.RData")
+load("../Data/Data-OLS/to-plot-confounding0.2.RData")
 to.plot.conf.0.2 = to.plot
-load("to-plot-confounding0.5.RData")
+load("../Data/Data-OLS/to-plot-confounding0.5.RData")
 to.plot.conf.0.5 = to.plot
-load("to-plot3.RData")
+load("../Data/Data-OLS/to-plot3.RData")
 rhos = seq(-0.5,0.5, 0.02)
 nie1 = ggplot() + 
   geom_line(data = data.frame(nie.est = rep(to.plot[round(to.plot[, "interaction.coefficient"], 2)==-0.20, "nie.est"], length(rhos))), aes(x=rhos, y = nie.est, col = "misspec.NIE")) +

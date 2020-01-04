@@ -1,0 +1,166 @@
+---
+title: "simulation summary binary"
+author: "Joakim Wallmark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Simulation study
+
+## Goal
+Parametric estimators for natural direct- and indirect effects are implemented in the sensmediation package. The goal is to test the methods implemented in this package. We will investigate and compare bias from model misspecification (interaction term missing in outcome model) with bias from mediator-outcome confounding through simulations.
+
+## Simulation scenarios
+Simulations of bias were done with model misspecification and confounding in separate comparable scenarios. 50000 iterations (half of the linear case due to time to run) with a sample size of 1000 were used for each scenario.
+
+variable | type | true model
+---------|----- | ----------------
+X(additional covariate) | continuous | $X\sim gamma(8, 4.5)$
+Z(exposure) | binary | $Z=I(Z*>0)$ where $Z*\sim U_0+U_1X+N(0, 1)$
+M(mediator) | binary | $M=I(M*>0)$ where $M*\sim \beta_0+\beta_1Z+\beta_2X+N(0, 1)$
+Y(outcome) | binary | $Y=I(Y*>0)$ where $Y*\sim \theta_0+\theta_1Z+\theta_2M+\theta_3ZM+\theta_4X+N(0, 1)$
+
+Table: Variables used for simulations
+
+```{r echo=F, include = F}
+  library(ggplot2)
+  library(ggdag)
+  library(gridExtra)
+```
+
+```{r echo=F, fig.width=4.2, fig.height=4}
+  dag  <- dagify(Z~X,
+                 M~Z+X,
+                 Y~Z+M+X)
+  ggdag(dag) + ggtitle("DAG showing data generating process") + 
+    theme(plot.title = element_text(size = 9, face = "bold"), 
+        axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank())
+```
+
+### Simulation scenarios (model misspecification)
+To get realistic parameter values, models were estimated using data from riksstroke from n=60353 patients. Parameter values used for simulations:
+
+* $U_0=-3.416096$
+* $U_1=0.036231$
+* $B_0=-1.6507546$
+* $B_1=0.2683970$
+* $B_2=0.0065543$
+* $\theta_0=-3.7220626$
+* $\theta_1=0.2763912$
+* $\theta_2=1.4729651$
+* $\theta_3=$ varied[-0.5, 0.5]
+* $\theta_4=0.0283196$
+
+Estimated mediator model was set to the correct one. Estimated outcome model was misspecified without $ZM$ interaction: $Y*\sim Z+M+X$.
+
+### Simulation scenarios (mediator-outcome confounding)
+
+Parameter values used for simulations:
+
+$corr(\omega, \epsilon)=$varied (-0.5,0.5)
+
+* $U_0=-3.416096$
+* $U_1=0.036231$
+* $B_0=-1.6507546$
+* $B_1=0.2683970$
+* $B_2=0.0065543$
+* $\theta_0=-3.7220626$
+* $\theta_1=0.2763912$
+* $\theta_2=1.4729651$
+* $\theta_3=-0.2583784$
+* $\theta_4=0.0283196$
+
+Estimated models were set to the correct ones. Bias was induced by changing error term correlation (between $\omega$ and $\epsilon$).
+\newpage
+
+## Results
+Bias of NIE changes linearly as we change interaction strength. NDE unbiased. Or maybe it's some small bias? We need more observations or a bigger coefficient change?:
+
+```{r echo=F}
+library(gridExtra)
+load("../Data/Data-probit/to-plot-probit50000.RData")
+
+int.nde = ggplot() + 
+  ggtitle("True vs estimated NDE(missing int.coef.)") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.position = c(0.86, 0.22)) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.est, col = "est NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true, col = "true NDE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=nde.est-nde.emp.SE, ymax=nde.est+nde.emp.SE), linetype=2, alpha=0.1) +
+  xlab('interaction.coef') +
+  ylab('effect')
+int.nie = ggplot() + 
+  ggtitle("True vs estimated NIE(missing int.coef.)") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.position = c(0.86, 0.22)) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.est, col = "est NIE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.true, col = "true NIE")) +
+  geom_ribbon(data = data.frame(to.plot), aes(x=interaction.coefficient, ymin=nie.est-nie.emp.SE, ymax=nie.est+nie.emp.SE), linetype=2, alpha=0.1) +
+  xlab('interaction.coef') +
+  ylab('effect')
+grid.arrange(int.nde, int.nie, nrow =1)
+```
+
+
+\newpage
+Total effect is biased. This differs from the situation where we used linear models:
+
+```{r echo=F, fig.height=3}
+int.total = ggplot() +
+  ggtitle("Total effect(TE) (misspecified model)") +
+  theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom") +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.true+nie.true, col = "True TE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.est+nie.est, col = "Estimated TE")) +
+  xlab('interaction.coef') +
+  ylab('total effect')
+grid.arrange(int.total, nrow = 1)
+```
+
+When missing the interaction term in the outcome model, the empirical data shows that we slightly underestimate the SE for the NIE. The opposite is true for NDE. Empirical SE also varies a lot here even though I use a lot of iterations. Might just be because y-scale is really small. All standard errors (both empirical and model) are pretty close in size for all values of the interaction:
+
+```{r echo=F}
+int.SE.NDE = ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.model.SE, col = "model. SE")) +
+  xlab('interaction.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NDE SE's")+
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7))
+int.SE.NIE = ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.emp.SE, col = "emp. SE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.model.SE, col = "model. SE")) +
+  xlab('interaction.coef') +
+  ylab('SE') +
+  ggtitle("Comparison of NIE SE's")+
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 7))
+grid.arrange(int.SE.NDE, int.SE.NIE, nrow = 1)
+```
+
+\newpage
+Overall pretty good coverage here compared to the linear models since we have so much bigger SE's in relation to the effects and bias. For negative interaction the coverage is bigger than 95%. Not sure why. We overestimate the NIE and our model SE's are smaller as we increase the negative interaction strength. Smaller SE's make smaller interval which should give even worse coverage. Maybe I did something wrong here? (wording)If I make the interaction more negative, am I increasing or decreasing the interaction?
+
+For the NDE case the bias is so small so the coverage gets better mostly because the SE gets bigger:
+
+```{r echo=F, fig.width=5, fig.height=3}
+cov.int = ggplot() + 
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nde.coverage, col = "NDE")) +
+  geom_line(data = data.frame(to.plot), aes(x=interaction.coefficient, y = nie.coverage, col = "NIE")) +
+  xlab('interaction.coef') +
+  ylab('coverage') +
+  ggtitle("Coverage of nominal 95% CI") +
+  theme(plot.title = element_text(size = 9, face = "bold"), legend.position = "bottom")
+grid.arrange(cov.int , nrow = 1)
+```
