@@ -35,6 +35,26 @@ for (i in 1:length(true.effects)) { #Calculate true effects for given scenario w
 }
 save(true.effects, file="true.effects.probit.RData") # store the true.effects
 
+# probit negative
+corr.coef = seq(-1,1, 0.08)
+result = vector(mode = "list", length = length(corr.coef))  #preallocate simulation result list
+true.effects = vector(mode = "list", length = length(corr.coef))  #preallocate list
+n.true.effect = 10000000
+set.seed(4235)
+for (i in 1:length(true.effects)) { #Calculate true effects for given scenario while increasing interaction effect
+  true.effects[[i]] = simulate.true.effects(n = n.true.effect,
+                                            covariate.models = "x-gamma",
+                                            covariate.parameters = list(c(104, 8, 4.5)),
+                                            exposure.coefs = c(I = -3.416096, X = 0.036231),
+                                            mediator.coefs = c(I = 1, Z = -0.4, X = -0.008, ZX = 0),
+                                            outcome.coefs = c(I = 4, Z = -0.4, M = -2, ZM = corr.coef[i], X = -0.03, ZX = 0, MX = 0, ZMX = 0),
+                                            outcome.mediator.type = "probit")
+  print(i)
+}
+save(true.effects, file="true.effects.probit.reverse.RData") # store the true.effects
+
+
+
 # Random plots
 temp = vector(length = 26)
 index= 1

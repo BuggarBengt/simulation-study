@@ -1,0 +1,51 @@
+---
+title: "Distribution of estimates"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Distribution of estimates
+
+Distribution of estimates, probit models with missing interaction term:
+
+```{r echo=F}
+load("../Data/Data-probit/result.probit10000.RData")
+result2000 = result
+load("../Data/Data-probit/result.probit50000.RData")
+result1000 = result
+
+par(mfrow=c(2,2))
+hist(result2000[[26]][, 2], probability = T, main = "NDE, true theta3 = 1, n=2000", xlab = "est. NDE", breaks=30)
+d <- density(result2000[[26]][, 2])
+lines(d, col="blue")
+hist(result2000[[8]][, 2], probability = T, main = "NDE, true theta3 = -0.44, n=2000", xlab = "est. NDE", breaks=30)
+d <- density(result2000[[8]][, 2])
+lines(d, col="blue")
+hist(result1000[[26]][, 2], probability = T, main = "NDE, true theta3 = 0.5, n=1000", xlab = "est. NDE", breaks=30)
+d <- density(result1000[[26]][, 2])
+lines(d, col="blue")
+hist(result1000[[2]][, 2], probability = T, main = "NDE, true theta3 = -0.46, n=1000", xlab = "est. NDE", breaks=30)
+d <- density(result1000[[2]][, 2])
+lines(d, col="blue")
+```
+
+
+
+```{r echo=F}
+par(mfrow=c(2,2))
+hist(result2000[[26]][, 1], probability = T, main = "NIE, true theta3 = 1, n=2000", xlab = "est. NIE", breaks=30)
+d <- density(result2000[[26]][, 1])
+lines(d, col="blue")
+hist(result2000[[8]][, 1], probability = T, main = "NIE, true theta3 = -0.44, n=2000", xlab = "est. NIE", breaks=30)
+d <- density(result2000[[8]][, 1])
+lines(d, col="blue")
+hist(result1000[[26]][, 1], probability = T, main = "NIE, true theta3 = 0.5, n=1000", xlab = "est. NIE", breaks=30)
+d <- density(result1000[[26]][, 1])
+lines(d, col="blue")
+hist(result1000[[2]][, 1], probability = T, main = "NIE, true theta3 = -0.46, n=1000", xlab = "est. NIE", breaks=30)
+d <- density(result1000[[2]][, 1])
+lines(d, col="blue")
+```
