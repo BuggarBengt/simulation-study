@@ -15,7 +15,7 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                sd.mediator = 1,
                                sd.outcome = 1,
                                misspecified.mediator.formula = "M~Z+X",
-                               misspecified.outcome.formula = "Y~Z+M+X", 
+                               misspecified.outcome.formula = "Y~Z+M+X+Z*M", # Remenber to use correct formula for confounding!
                                mediator.outcome.corr = rho[i])
   print(i/length(result))
 }
@@ -65,37 +65,10 @@ c.nie = ggplot() +
 grid.arrange(c.nde, c.nie, nrow = 1)
 
 
-data = generate.data(n = 2000,
-                     covariate.models = c("x-gamma"),
-                     covariate.parameters = list(c(104, 8, 4.5)),
-                     exposure.coefs = c(I = -3.416096, X = 0.036231),
-                     mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
-                     outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
-                     outcome.mediator.type = "probit",
-                     sd.exposure = 1,
-                     sd.mediator = 1,
-                     sd.outcome = 1)
-true.NDE = calc.nde.probit(b = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0), t = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0), x = data[, "X"]) 
-true.NIE = calc.nie.probit(b = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0), t = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0), x = data[, "X"])
-mean(true.NDE)
-mean(true.NIE)
 
-test = run.simulation(iterations = 1000,
-                             n = 2000,
-                             covariate.models = c("x-gamma"),
-                             covariate.parameters = list(c(104, 8, 4.5)),
-                             true.exposure.coefs = c(I = -3.416096, X = 0.036231),
-                             true.mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
-                             true.outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
-                             outcome.mediator.type = "probit",
-                             sd.exposure = 1,
-                             sd.mediator = 1,
-                             sd.outcome = 1,
-                             misspecified.mediator.formula = "M~Z+X",
-                             misspecified.outcome.formula = "Y~Z+M+X", 
-                             mediator.outcome.corr = 0)
-test
 
-mean(test[1])
-mean(test[2])
+
+
+
+
 
