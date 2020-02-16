@@ -33,36 +33,22 @@ end_time - start_time
 # Rprof()
 # summaryRprof(tmp)
 
-<<<<<<< HEAD
-save(result, file="result.confounding0.fds2.RData") # store the results
-load("true.effects.RData")# read true.effects
-load("result.confounding-0.2.RData")# read results
-=======
+
 save(result, file="result.confounding-0dsadas.RData") # store the results
 load("true.effects.RData")# read true.effects
 load("result.confounding0.5.RData")# read results
 corr.coef = 0.5
->>>>>>> b15dd47e504ec2ceed93edc2b9106eab2752b733
 
 result.summary.NDE = vector(mode = "list", length = length(result))
 result.summary.NIE = vector(mode = "list", length = length(result))
 for (i in 1:length(result)) { # get different statistics of our estimates using rsimsum for each scenario
-<<<<<<< HEAD
-  result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = mean(true.effects[[16]][, 2]), se = "SE.nde")
-  result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = mean(true.effects[[16]][, 1]), se = "SE.nie")
-=======
   result.summary.NDE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nde", true = true.effects[true.effects[, 1]==corr.coef, 3], se = "SE.nde")
   result.summary.NIE[[i]] <- simsum(data = data.frame(result[[i]]), estvarname = "est.nie", true = true.effects[true.effects[, 1]==corr.coef, 2], se = "SE.nie")
->>>>>>> b15dd47e504ec2ceed93edc2b9106eab2752b733
 }
 
 to.plot = create.data.frame.for.plotting(result.summary.NDE, result.summary.NIE, rhos)
 colnames(to.plot)[1] = "corr"
 
-<<<<<<< HEAD
-save(to.plot, file="to-plot-confounding-0.2.RData") # store the results
-load("to-plot-confounding-0.2.RData")# read true.effects
-=======
 save(to.plot, file="to-plot-confounding0.5.RData") # store the results
 load("to-plot-confounding-0.2.RData")# read true.effects
 to.plot.conf.n0.2 = to.plot
@@ -73,7 +59,6 @@ to.plot.conf.0.2 = to.plot
 load("to-plot-confounding0.5.RData")# read true.effects
 to.plot.conf.0.5 = to.plot
 load("to-plot3.RData")# read true.effects
->>>>>>> b15dd47e504ec2ceed93edc2b9106eab2752b733
 
 nde1 = ggplot() + 
   geom_line(data = data.frame(nde.est = rep(to.plot[to.plot[, "interaction.coefficient"]==-0.2, "nde.est"], length(rhos))), aes(x=rhos, y = nde.est, col = "est NDE misspecified")) +

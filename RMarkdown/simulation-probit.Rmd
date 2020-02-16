@@ -62,7 +62,7 @@ Estimated mediator model was set to the correct one. Estimated outcome model was
 
 Parameter values used for simulations:
 
-$corr(\omega, \epsilon)=$varied (-0.5,0.5)
+$corr(\omega, \epsilon)=$varied (-0.5,0.5), gaps of $0.05$
 
 * $U_0=-3.416096$
 * $U_1=0.036231$

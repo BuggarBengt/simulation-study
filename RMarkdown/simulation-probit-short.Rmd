@@ -40,7 +40,7 @@ Table: Variables used for simulations
 ```
 
 ### Simulation scenarios (model misspecification)
-To get realistic parameter values, models were estimated using data from riksstroke from n=60353 patients. Parameter values used for simulations:
+Negative effects
 
 covariate.parameters = list(c(104, 8, 4.5)),
 true.exposure.coefs = c(I = -3.416096, X = 0.036231),

@@ -35,8 +35,8 @@ for (i in 1:length(result)) { # run simulations while increasing interaction eff
                                covariate.models = c("x-gamma"),
                                covariate.parameters = list(c(104, 8, 4.5)),
                                true.exposure.coefs = c(I = -3.416096, X = 0.036231),
-                               true.mediator.coefs = c(I = 1, Z = -0.4, X = -0.008, ZX = 0),
-                               true.outcome.coefs = c(I = 4, Z = -0.4, M = -2, ZM = corr.coef[i], X = -0.03, ZX = 0, MX = 0, ZMX = 0),
+                               true.mediator.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0),
+                               true.outcome.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = corr.coef[i], X = 0.0283196, ZX = 0, MX = 0, ZMX = 0),
                                outcome.mediator.type = "probit",
                                sd.exposure = 1,
                                sd.mediator = 1,
@@ -49,7 +49,7 @@ end_time = Sys.time()
 end_time - start_time
 
 
-save(result, file="Data/Data-probit/result.probit.reverse.i10000.n2000.RData") # store the result
+save(result, file="Data/Data-probit/result.probit.confounding.i10000.n2000.RData") # store the result
 load("Data/Data-probit/true.effects.probit.RData")# read true.effects
 load("Data/Data-probit/result.probit10000.RData")# read result
 
@@ -105,5 +105,3 @@ lines(d, col="blue")
 hist(result[[2]][, 1], probability = T, main = "NIE, true theta3 = ?", xlab = "est. NIE", breaks=30)
 d <- density(result[[2]][, 1])
 lines(d, col="blue")
-
-
