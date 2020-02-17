@@ -13,7 +13,7 @@ M   = 3 + 2*Z + 0.05*X + rnorm(n = n, mean = 0, sd = 1)
 Y   = 5 + 1*Z + 0.5*M + 0*Z*M + 0.05*X + 0.5*Z*M + rnorm(n = n, mean = 0, sd = 1)
 data = data.frame(Y, M, Z, X, X2, X3)
 
-result = interaction.test(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X", "X2", "X3"), progress = T)
+result = interaction.test.multi.def(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X", "X2", "X3"))
 result[[1]]$NIE
 result[[2]]$NIE
 
@@ -34,6 +34,6 @@ M.s   = -1.6507546 + 0.2683970*Z + 0.0065543*X + rnorm(n = n, mean = 0, sd = 1)
 Y.s   = -3.7220626 + 0.2763912*Z + 1.4729651*M - 0.2583784*Z*M + 0.0283196*X + 0.5*Z*M + rnorm(n = n, mean = 0, sd = 1)
 data = data.frame(Y, M, Z, X, X2, X3)
 
-result = interaction.test(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X", "X2", "X3"),med.model = "probit", out.model = "probit")
+result = interaction.test.multi.def(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X", "X2", "X3"),med.model = "probit", out.model = "probit")
 result[[1]]$NIE
 result[[2]]$NIE
