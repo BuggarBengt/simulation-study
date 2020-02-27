@@ -15,17 +15,17 @@ Y.s   = -3.7220626 + 0.2763912*Z + 1.4729651*M - 0.2583784*Z*M + 0.0283196*X + r
 Y   = ifelse(Y.s>0, 1, 0)
 data = data.frame(Y, M, Z, X, X2, X3)
 
-result = interaction.test.multi.def(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"),med.model = "probit", out.model = "probit")
+result = interaction.test.multi.def(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"),med.model = "probit", out.model = "probit", bootstrap = T)
 
 # Alpha test probit
 
 # No interaction reality
-exp.coefs = c(I = -3.5, X = 0.05)
-med.coefs = c(I = -6, Z = 2, X = 0.1, ZX = 0)
-out.coefs = c(I = -4, Z = 2, M = 2, ZM = 0, X = 0.025, ZX = 0, MX = 0, ZMX = 0)
-# exp.coefs = c(I = -3.416096, X = 0.036231)
-# med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
-# out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
+# exp.coefs = c(I = -3.5, X = 0.05)
+# med.coefs = c(I = -6, Z = 2, X = 0.1, ZX = 0)
+# out.coefs = c(I = -4, Z = 2, M = 2, ZM = 0, X = 0.025, ZX = 0, MX = 0, ZMX = 0)
+exp.coefs = c(I = -3.416096, X = 0.036231)
+med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
+out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
 
 iter = 100000
 n    = 1000
@@ -35,7 +35,7 @@ diff.def.test = vector(mode = "numeric", length = iter)
 set.seed(123)
 start_time = Sys.time()
 for (i in 1:iter) {
-  X   = rnorm(n = n, mean = 60, 10)
+  X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
   Z.s = exp.coefs[1] + exp.coefs[2]*X + rnorm(n = n, mean = 0, sd = 1)
   Z   = ifelse(Z.s>0, 1, 0)
   M.s = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)

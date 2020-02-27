@@ -1,4 +1,5 @@
 library(sensmediation)
+library(boot)
 
 interaction.test.out.p.value = function(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = NULL, out.model = "gaussian") {
   out.formula = paste(out.name, "~", paste(c(exp.name, med.name, cov.names, paste(exp.name, "*", med.name, sep = "")), collapse = "+"), sep = "")
@@ -18,17 +19,34 @@ interaction.test.out.p.value = function(data, exp.name = "Z", med.name = "M", ou
   return(p.value) # return p-value for interaction coefficient
 }
 
+bootstrap.diff = function(data, indices, med.formula, out.formula, exp.name = "Z", med.name = "M", med.model.type = "gaussian", out.model.type = "gaussian") {
+  dt<-data[indices,]
+  if (med.model.type == "probit") 
+    med.model <- glm(med.formula, data = dt, family = binomial(link = "probit")) 
+  else 
+    med.model <- glm(med.formula, data = dt) 
+  
+  if (out.model.type == "probit") 
+    out.model <- glm(out.formula, data = dt, family = binomial(link = "probit")) 
+  else 
+    out.model <- glm(out.formula, data = dt) 
+  
+  #est1 <- sensmediation(med.model=med.model, out.model=out.model, exp.name = "Z", med.name = "M")
+  #est2 <- sensmediation(med.model=med.model, out.model=out.model, exp.name = "Z", med.name = "M", alt.decomposition = T)
+  #return(c(NDE = est1$NDE-est2$NDE, NIE = est1$NIE-est2$NIE))
+  return(out.model$coefficients[1])
+}
 
-interaction.test.multi.def = function(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = NULL, med.model = "gaussian", out.model = "gaussian") {
+interaction.test.multi.def = function(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = NULL, med.model.type = "gaussian", out.model.type = "gaussian", bootstrap=F) {
   med.formula = paste(med.name, "~", paste(c(exp.name, cov.names), collapse = "+"), sep = "")
   out.formula = paste(out.name, "~", paste(c(exp.name, med.name, cov.names, paste(exp.name, "*", med.name, sep = "")), collapse = "+"), sep = "")
   
-  if (med.model == "probit") 
+  if (med.model.type == "probit") 
     med.model <- glm(med.formula, data = data, family = binomial(link = "probit")) 
   else 
     med.model <- glm(med.formula, data = data) 
   
-  if (out.model == "probit") 
+  if (out.model.type == "probit") 
     out.model <- glm(out.formula, data = data, family = binomial(link = "probit")) 
   else 
     out.model <- glm(out.formula, data = data) 
@@ -40,17 +58,24 @@ interaction.test.multi.def = function(data, exp.name = "Z", med.name = "M", out.
   diff.nie = est1$NIE-est2$NIE
   
   # We need SE of est1$NDE-est2$NDE
-  # Derivaties for NDE-NDE/NIE-NIE. Since deriv. of A-B = A'-B' we get:
-  part.derivs.NDE = est1$part.deriv$`0`$Lambda - est2$part.deriv$`0`$Lambda
-  part.derivs.NIE = est1$part.deriv$`0`$Gamma - est2$part.deriv$`0`$Gamma
-  
-  # Get standard error by delta method. %*% for matrix multipl.
-  NDE.SE = sqrt(part.derivs.NDE %*% est1$sigma.thetabeta$`0` %*% part.derivs.NDE)
-  NIE.SE = sqrt(part.derivs.NIE %*% est1$sigma.thetabeta$`0` %*% part.derivs.NIE)
-  
-  p.NDE = pnorm(abs(diff.nde), mean = 0, sd = NDE.SE, lower.tail = F)*2 # two-tailed test -> *2
-  p.NIE = pnorm(abs(diff.nie), mean = 0, sd = NIE.SE, lower.tail = F)*2
-  
+  if(bootstrap) { # get SE's using bootstrap?
+    boot.distr <- boot(data = data, statistic = bootstrap.diff, R = 1000, 
+                       med.formula = med.formula, out.formula = out.formula, 
+                       exp.name = exp.name, med.name = med.name, 
+                       med.model.type = med.model.type, out.model.type = out.model.type)
+  } else {
+    # Get standard error by delta method. %*% for matrix multipl.
+    # Derivaties for NDE-NDE/NIE-NIE. Since deriv. of A-B = A'-B' we get:
+    part.derivs.NDE = est1$part.deriv$`0`$Lambda - est2$part.deriv$`0`$Lambda
+    part.derivs.NIE = est1$part.deriv$`0`$Gamma - est2$part.deriv$`0`$Gamma
+    
+    NDE.SE = sqrt(part.derivs.NDE %*% est1$sigma.thetabeta$`0` %*% part.derivs.NDE)
+    NIE.SE = sqrt(part.derivs.NIE %*% est1$sigma.thetabeta$`0` %*% part.derivs.NIE)
+    
+    p.NDE = pnorm(abs(diff.nde), mean = 0, sd = NDE.SE, lower.tail = F)*2 # two-tailed test -> *2
+    p.NIE = pnorm(abs(diff.nie), mean = 0, sd = NIE.SE, lower.tail = F)*2
+  }
+
   result = matrix(c(diff.nde, diff.nie, NDE.SE, NIE.SE, p.NDE, p.NIE), nrow = 2, ncol = 3, dimnames = list(c("NDE", "NIE"), c("est.diff", "SE", "p-value")))
   
   return(result)
@@ -98,3 +123,31 @@ interaction.test.est.comp = function(data, exp.name = "Z", med.name = "M", out.n
   
   return(result)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,31 @@
+---
+title: "Power"
+author: "Joakim Wallmark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Alpha
+
+## Linear
+
+iter = 4000, n    = 2000
+
+exp.coefs =  c(I = -0.4, X = 0.01)
+
+med.coefs = c(I = 3, Z = 2, X = 0.05, ZX = -0.03)
+
+out.coefs = c(I = 5, Z = 1, M = 0.5, ZM = 0, X = 0.05, ZX = 0, MX = 0, ZMX = 0)
+
+$ZX=-0.03$, både i datagenereringen och en skattning i modellen
+
+```{r echo=F, fig.height=4}
+  load(file = "../../Data/Data-test-tests/additional.mediator.linear.p.values.n.2000.i.4000")
+  load(file = "../../Data/Data-test-tests/additional.mediator.linear.diff.n.2000.i.4000")
+  
+  hist(p.values.def.test)
+  plot(density(diff.def.test))
+```
