@@ -2,7 +2,7 @@ exp.coefs = c(I = -3.5, X = 0.1)
 med.coefs = c(I = -6, Z = 2, X = 0.1, ZX = 0)
 out.coefs = c(I = -6, Z = 1, M = 3, ZM = 0, X = 0.05, ZX = 0, MX = 0, ZMX = 0)
 
-iter = 4000
+iter = 3000
 n    = 3000
 NDEs = vector("numeric", iter) 
 NIEs = vector("numeric", iter) 
@@ -12,7 +12,7 @@ for (i in 1:iter) {
   if (i%%10 == 0) {
     print(i/iter) 
   }
-  X   = 1+rexp(n = n, rate = 0.05)
+  X   = 30+rexp(n = n, rate = 0.1)
   Z.s = exp.coefs[1] + exp.coefs[2]*X + rnorm(n = n, mean = 0, sd = 1)
   Z   = ifelse(Z.s>0, 1, 0)
   M.s = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)
@@ -32,5 +32,15 @@ end_time = Sys.time()
 end_time - start_time
 hist(NDEs, breaks = 20)
 hist(NIEs, breaks = 20)
+shapiro.test(NIEs)
+mean(NIEs)
+sd(NIEs)
+sort(NIEs)[1:150]
+pnorm(0.1252474, mean(NIEs), sd(NIEs))
 
+
+
+sum(Z)
+sum(M)
+sum(Y)
 

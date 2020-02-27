@@ -1,0 +1,56 @@
+---
+title: "Power"
+author: "Joakim Wallmark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Power
+
+## Linear
+
+### Scenario 1
+iterations = 100000
+n = 200
+
+true interaction coefficients = seq(0, 0.5, 0.05)
+
+exp.coefs =  c(I = -0.4, X = 0.01)
+
+med.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0)
+
+out.coefs = c(I = 5, Z = 1, M = 0.5, ZM = 0, X = 0.05, ZX = 0, MX = 0, ZMX = 0)
+
+```{r echo=F, fig.height=4}
+  load(file = "../../Data/Data-test-tests/linear.power.diff.n.200.i.100000")
+  load(file = "../../Data/Data-test-tests/linear.power.p.value.n.200.i.100000")
+  
+  interaction.coefs = seq(0, 0.5, 0.05)
+
+  d.f = data.frame(test = c(rep("p value powers", length(interaction.coefs)), rep("austin powers", length(interaction.coefs))),
+  power = c(p.value.powers, austin.powers), 
+  true.int.coef = c(interaction.coefs, interaction.coefs))
+  library(ggplot2)
+  ggplot(data = d.f, aes(x=true.int.coef, y=power, group=test)) +
+    geom_line(aes(color=test))+
+    geom_point(aes(color=test))+
+    labs(title="Linear, n=200, i=100000",x="True interaction coefficient", y = "Power")  
+```
+
+Estimated power differences (sum(p.values.def.test<0.05)/iter - sum(p.values.p.test<0.05)/iter) for each value of interaction:
+
+```{r echo=F}
+  austin.powers-p.value.powers
+
+```
+
+t-test of group differences. Eftersom alla har samma tecken är det supersignifikant.
+
+```{r echo=F}
+  t.test(austin.powers, p.value.powers, paired = T)
+```
+
+

@@ -67,6 +67,12 @@ shapiro.test(diff.def.test[1:5000])
 shapiro.test(diff.NDE.test[1:5000])
 shapiro.test(diff.NIE.test[1:5000])
 
+load(file = "Data/Data-test-tests/linear.p.values.p.n.20000.i.10000")
+load(file = "Data/Data-test-tests/linear.p.values.diff.n.20000.i.10000")
+load(file = "Data/Data-test-tests/linear.diff.n.20000.i.10000")
+load(file = "Data/Data-test-tests/linear.nde.est.comp.n.20000.i.10000")
+load(file = "Data/Data-test-tests/linear.nie.est.comp.n.20000.i.10000")
+
 save(p.values.p.test, file = "Data/Data-test-tests/linear.p.values.p.n.20000.i.10000")
 save(p.values.def.test, file = "Data/Data-test-tests/linear.p.values.diff.n.20000.i.10000")
 save(diff.def.test, file = "Data/Data-test-tests/linear.diff.n.20000.i.10000")
@@ -97,7 +103,7 @@ for (c in 1:length(interaction.coefs)) {
     Z   = ifelse(Z.s>0, 1, 0)
     M = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)
     Y = out.coefs[1] + out.coefs[2]*Z + out.coefs[3]*M + interaction.coefs[c]*Z*M + out.coefs[5]*X + rnorm(n = n, mean = 0, sd = 1)
-    data = data.frame(Y, M, Z, X, X2, X3)
+    data = data.frame(Y, M, Z, X)
     
     p.values.p.test[i] = interaction.test.out.p.value(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), out.model = "gaussian")
     def.test = interaction.test.multi.def(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X") ,med.model = "gaussian", out.model = "gaussian")
@@ -113,7 +119,22 @@ for (c in 1:length(interaction.coefs)) {
 end_time = Sys.time()
 end_time - start_time
 
-save(diff.NDE.test, file = "Data/Data-test-tests/linear.power.nde.est.comp.n.20000.i.10000")
-save(diff.NIE.test, file = "Data/Data-test-tests/linear.power.nie.est.comp.n.20000.i.10000")
+austin.powers-p.value.powers
+t.test(austin.powers, p.value.powers, paired = T)
+d.f = data.frame(test = c(rep("p value powers", length(interaction.coefs)), rep("austin powers", length(interaction.coefs))),
+  power = c(p.value.powers, austin.powers), 
+  true.int.coef = c(interaction.coefs, interaction.coefs))
+library(ggplot2)
+ggplot(data = d.f, aes(x=true.int.coef, y=power, group=test)) +
+  geom_line(aes(color=test))+
+  geom_point(aes(color=test))+
+  labs(title="Linear, n=200, i=100000",x="True interaction coefficient", y = "Power")
+  
+
+load(file = "Data/Data-test-tests/linear.power.diff.n.200.i.100000")
+load(file = "Data/Data-test-tests/linear.power.p.value.n.200.i.100000")
+
+save(austin.powers, file = "Data/Data-test-tests/linear.power.diff.n.200.i.100000")
+save(p.value.powers, file = "Data/Data-test-tests/linear.power.p.value.n.200.i.100000")
 
 

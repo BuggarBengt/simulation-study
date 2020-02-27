@@ -7,7 +7,15 @@ interaction.test.out.p.value = function(data, exp.name = "Z", med.name = "M", ou
     out.model <- glm(out.formula, data = data, family = binomial(link = "probit")) 
   else 
     out.model <- glm(out.formula, data = data) 
-  return(coefficients(summary(out.model))[paste(exp.name, ":", med.name, sep = ""), 4]) # return p-value for interaction coefficient
+  p.value = tryCatch(
+    expr = {
+      coefficients(summary(out.model))[paste(exp.name, ":", med.name, sep = ""), 4]
+    },
+    error = function(e){ # return higest possible p-value of no interaction term was found
+      return(1)
+    }
+  )
+  return(p.value) # return p-value for interaction coefficient
 }
 
 
