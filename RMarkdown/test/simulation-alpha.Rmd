@@ -52,6 +52,8 @@ med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
 
 out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
 
+X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
+
 ```{r echo = F, fig.height=4}
 load(file = "../../Data/Data-test-tests/probit.p.values.p.n.1000.i.100000")
 load(file = "../../Data/Data-test-tests/probit.p.values.diff.n.1000.i.100000")
@@ -67,27 +69,5 @@ library("car")
 qqPlot(diff.def.test)
 ```
 
-### Scenario 1
-iter = 100000, n    = 1000
 
-exp.coefs = c(I = -3.416096, X = 0.036231)
-
-med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
-
-out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
-
-```{r echo = F, fig.height=4}
-load(file = "../../Data/Data-test-tests/probit.p.values.p.n.1000.i.100000.s2")
-load(file = "../../Data/Data-test-tests/probit.p.values.diff.n.1000.i.100000.s2")
-load(file = "../../Data/Data-test-tests/probit.diff.n.1000.i.100000.s2")
-
-hist(p.values.p.test, breaks = 50)
-hist(p.values.def.test)
-hist(diff.def.test, breaks = 50)
-mean(diff.def.test)
-
-shapiro.test(diff.def.test[1:5000])
-library("car")
-qqPlot(diff.def.test)
-```
 

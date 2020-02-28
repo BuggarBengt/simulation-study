@@ -65,9 +65,9 @@ shapiro.test(diff.def.test)
 library("car")
 qqPlot(diff.def.test)
 
-save(p.values.p.test, file = "Data/Data-test-tests/probit.p.values.p.n.1000.i.100000.s2")
-save(p.values.def.test, file = "Data/Data-test-tests/probit.p.values.diff.n.1000.i.100000.s2")
-save(diff.def.test, file = "Data/Data-test-tests/probit.diff.n.1000.i.100000.s2")
+save(p.values.p.test, file = "Data/Data-test-tests/probit.p.values.p.n.1000.i.100000")
+save(p.values.def.test, file = "Data/Data-test-tests/probit.p.values.diff.n.1000.i.100000")
+save(diff.def.test, file = "Data/Data-test-tests/probit.diff.n.1000.i.100000")
 
 # Power
 # Interaction reality
