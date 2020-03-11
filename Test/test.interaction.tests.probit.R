@@ -132,11 +132,57 @@ save(p.value.powers, file = "Data/Data-test-tests/probit.power.p.value.n.2000.i.
 
 
 
+# Alpha test probit boot
 
+# No interaction reality
+# exp.coefs = c(I = -3.5, X = 0.05)
+# med.coefs = c(I = -6, Z = 2, X = 0.1, ZX = 0)
+# out.coefs = c(I = -4, Z = 2, M = 2, ZM = 0, X = 0.025, ZX = 0, MX = 0, ZMX = 0)
+exp.coefs = c(I = -3.416096, X = 0.036231)
+med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
+out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
 
+iter = 2000
+n    = 2000
+p.values.nde   = vector(mode = "numeric", length = iter)
+p.values.nie = vector(mode = "numeric", length = iter)
+diffs = vector(mode = "numeric", length = iter)
+SEs = vector(mode = "numeric", length = iter)
+set.seed(124)
+start_time = Sys.time()
+for (i in 1:iter) {
+  X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
+  Z.s = exp.coefs[1] + exp.coefs[2]*X + rnorm(n = n, mean = 0, sd = 1)
+  Z   = ifelse(Z.s>0, 1, 0)
+  M.s = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)
+  M   = ifelse(M.s>0, 1, 0)
+  Y.s = out.coefs[1] + out.coefs[2]*Z + out.coefs[3]*M + out.coefs[5]*X + rnorm(n = n, mean = 0, sd = 1)
+  Y   = ifelse(Y.s>0, 1, 0)
+  data = data.frame(Y, M, Z, X)
+  def.test.boot = interaction.test.multi.def.boot(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), 
+                                             med.model.type = "probit", out.model.type =  "probit", R=2000)
+  p.values.nde[i] = def.test.boot[1, 3]
+  p.values.nie[i] = def.test.boot[2, 3]
+  diffs[i] = def.test.boot[1, 1]
+  SEs[i] = def.test.boot[1, 2]
+  
+  if (i%%10 == 0) {
+    print(i/iter) 
+    print(paste("time left: ", (iter-i)/i*(Sys.time()-start_time)))
+  }
+}
+end_time = Sys.time()
+end_time - start_time
+save(p.values.nde, file = "Data/Data-test-tests/probit.boot.p.values.p.n.2000.i.2000.R.2000")
+save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.2000.i.2000.R.2000")
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000")
 
-
-
+hist(p.values.nde, breaks = 50)
+hist(p.values.nie, breaks = 15)
+hist(diffs, breaks = 20)
+mean(diffs)
+median(diffs)
 
 
 

@@ -19,24 +19,6 @@ interaction.test.out.p.value = function(data, exp.name = "Z", med.name = "M", ou
   return(p.value) # return p-value for interaction coefficient
 }
 
-bootstrap.diff = function(data, indices, med.formula, out.formula, exp.name = "Z", med.name = "M", med.model.type = "gaussian", out.model.type = "gaussian") {
-  dt<-data[indices,]
-  if (med.model.type == "probit") 
-    med.model <- glm(med.formula, data = dt, family = binomial(link = "probit")) 
-  else 
-    med.model <- glm(med.formula, data = dt) 
-  
-  if (out.model.type == "probit") 
-    out.model <- glm(out.formula, data = dt, family = binomial(link = "probit")) 
-  else 
-    out.model <- glm(out.formula, data = dt) 
-  
-  #est1 <- sensmediation(med.model=med.model, out.model=out.model, exp.name = "Z", med.name = "M")
-  #est2 <- sensmediation(med.model=med.model, out.model=out.model, exp.name = "Z", med.name = "M", alt.decomposition = T)
-  #return(c(NDE = est1$NDE-est2$NDE, NIE = est1$NIE-est2$NIE))
-  return(out.model$coefficients[1])
-}
-
 interaction.test.multi.def = function(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = NULL, med.model.type = "gaussian", out.model.type = "gaussian", bootstrap=F) {
   med.formula = paste(med.name, "~", paste(c(exp.name, cov.names), collapse = "+"), sep = "")
   out.formula = paste(out.name, "~", paste(c(exp.name, med.name, cov.names, paste(exp.name, "*", med.name, sep = "")), collapse = "+"), sep = "")
