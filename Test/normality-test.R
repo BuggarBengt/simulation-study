@@ -37,10 +37,42 @@ mean(NIEs)
 sd(NIEs)
 sort(NIEs)[1:150]
 pnorm(0.1252474, mean(NIEs), sd(NIEs))
-
-
-
 sum(Z)
 sum(M)
 sum(Y)
+
+
+iter = 2000
+n    = 2000
+p.values.nde   = vector(mode = "numeric", length = iter)
+p.values.nie = vector(mode = "numeric", length = iter)
+diffs = vector(mode = "numeric", length = iter)
+SEs = vector(mode = "numeric", length = iter)
+set.seed(124)
+start_time = Sys.time()
+for (i in 1:iter) {
+  X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
+  Z.s = exp.coefs[1] + exp.coefs[2]*X + rnorm(n = n, mean = 0, sd = 1)
+  Z   = ifelse(Z.s>0, 1, 0)
+  M.s = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)
+  M   = ifelse(M.s>0, 1, 0)
+  Y.s = out.coefs[1] + out.coefs[2]*Z + out.coefs[3]*M + out.coefs[5]*X + rnorm(n = n, mean = 0, sd = 1)
+  Y   = ifelse(Y.s>0, 1, 0)
+  data = data.frame(Y, M, Z, X)
+  def.test.boot = interaction.test.multi.def.boot(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), 
+                                                  med.model.type = "probit", out.model.type =  "probit", R=2000)
+  p.values.nde[i] = def.test.boot[1, 3]
+  p.values.nie[i] = def.test.boot[2, 3]
+  diffs[i] = def.test.boot[1, 1]
+  SEs[i] = def.test.boot[1, 2]
+  
+  if (i%%10 == 0) {
+    print(i/iter) 
+    print(paste("time left: ", (iter-i)/i*(Sys.time()-start_time)))
+  }
+}
+end_time = Sys.time()
+end_time - start_time
+
+
 

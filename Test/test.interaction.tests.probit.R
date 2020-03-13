@@ -142,8 +142,8 @@ exp.coefs = c(I = -3.416096, X = 0.036231)
 med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
 out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
 
-iter = 2000
-n    = 2000
+iter = 1000
+n    = 1000
 p.values.nde   = vector(mode = "numeric", length = iter)
 p.values.nie = vector(mode = "numeric", length = iter)
 diffs = vector(mode = "numeric", length = iter)
@@ -160,7 +160,7 @@ for (i in 1:iter) {
   Y   = ifelse(Y.s>0, 1, 0)
   data = data.frame(Y, M, Z, X)
   def.test.boot = interaction.test.multi.def.boot(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), 
-                                             med.model.type = "probit", out.model.type =  "probit", R=2000)
+                                             med.model.type = "probit", out.model.type =  "probit", R=1000)
   p.values.nde[i] = def.test.boot[1, 3]
   p.values.nie[i] = def.test.boot[2, 3]
   diffs[i] = def.test.boot[1, 1]
@@ -173,8 +173,8 @@ for (i in 1:iter) {
 }
 end_time = Sys.time()
 end_time - start_time
-save(p.values.nde, file = "Data/Data-test-tests/probit.boot.p.values.p.n.2000.i.2000.R.2000")
-save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.2000.i.2000.R.2000")
+save(p.values.nde, file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000.nonzero")
+save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.nonzero")
 load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000")
 load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000")
 
@@ -185,13 +185,24 @@ mean(diffs)
 median(diffs)
 
 
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000")
+p1 = p.values.nde # - mean(t)
+d1 = diffs
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.2000.i.2000.R.2000")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.2000.i.2000.R.2000")
+p2 = p.values.nde # - mean(t)
+d2 = diffs
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.nonzero")
+p3 = p.values.nde # - mean(t)+true diff under H0
+d3 = diffs
 
-
-
-
-
-
-
+par(mfrow = c(2, 2))
+hist(p1, breaks = 30)
+hist(p2, breaks = 30)
+hist(p3, breaks = 30)
+plot(density(p3))
 
 
 

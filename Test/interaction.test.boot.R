@@ -87,8 +87,8 @@ interaction.test.multi.def.boot = function(data, exp.name = "Z", med.name = "M",
   
   # centered.dist.nie = res$t[, 1] - res$t0[1] # move distr. with the true sample diff
   # centered.dist.nde = res$t[, 2] - res$t0[2] 
-  centered.dist.nie = res$t[, 1] - mean(res$t[, 1])  # move distr. with the true sample diff
-  centered.dist.nde = res$t[, 2] - mean(res$t[, 2]) 
+  centered.dist.nie = res$t[, 1] - mean(res$t[, 1]) + 0.004277872  # move distr. with the true sample diff
+  centered.dist.nde = res$t[, 2] - mean(res$t[, 2]) - 0.004277872
   
   p.NIE = min(2*mean(centered.dist.nie <= res$t0[1]), 2*mean(centered.dist.nie >= res$t0[1])) # get p-value   
   p.NDE = min(2*mean(centered.dist.nde <= res$t0[2]), 2*mean(centered.dist.nde >= res$t0[2]))
