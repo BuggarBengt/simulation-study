@@ -138,3 +138,81 @@ save(austin.powers, file = "Data/Data-test-tests/linear.power.diff.n.200.i.10000
 save(p.value.powers, file = "Data/Data-test-tests/linear.power.p.value.n.200.i.100000")
 
 
+
+
+
+
+# Alpha test linear
+# No interaction reality
+exp.coefs =  c(I = -0.4, X = 0.01)
+med.coefs = c(I = 3, Z = 2, X = 0.05, ZX = 0)
+out.coefs = c(I = 5, Z = 1, M = 0.5, ZM = 0, X = 0.05, ZX = 0, MX = 0, ZMX = 0)
+
+iter = 10000
+n    = 1000
+p.values.def.test = vector(mode = "numeric", length = iter)
+diff.def.test = vector(mode = "numeric", length = iter)
+p.values.def.test2 = vector(mode = "numeric", length = iter)
+diff.def.test2 = vector(mode = "numeric", length = iter)
+set.seed(12)
+start_time = Sys.time()
+for (i in 1:iter) {
+  if (i%%10 == 0) {
+    print(i/iter) 
+  }
+  X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
+  Z.s = exp.coefs[1] + exp.coefs[2]*X + rnorm(n = n, mean = 0, sd = 1)
+  Z   = ifelse(Z.s>0, 1, 0)
+  M = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)
+  Y = out.coefs[1] + out.coefs[2]*Z + out.coefs[3]*M + out.coefs[5]*X + rnorm(n = n, mean = 0, sd = 1)
+  data = data.frame(Y, M, Z, X) # , X2, X3)
+
+  def.test2 = interaction.test.multi.def.cc(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X") ,med.model = "gaussian", out.model = "gaussian")
+  diff.def.test2[i] = def.test2[1]
+  p.values.def.test2[i] = def.test2[3]
+  
+  def.test = interaction.test.multi.def(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X") ,med.model = "gaussian", out.model = "gaussian")
+  diff.def.test[i] = def.test[1, 1]
+  p.values.def.test[i] = def.test[1, 3]
+}
+end_time = Sys.time()
+end_time - start_time
+par(mfrow=c(2, 2))
+hist(diff.def.test)
+hist(p.values.def.test)
+hist(diff.def.test2)
+hist(p.values.def.test2)
+plot(density(diff.def.test))
+plot(density(diff.NDE.test))
+plot(density(diff.NIE.test))
+shapiro.test(diff.def.test[1:5000])
+shapiro.test(diff.NDE.test[1:5000])
+shapiro.test(diff.NIE.test[1:5000])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
