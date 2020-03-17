@@ -65,19 +65,13 @@ effects.bb = function (betas, thetas, x.med, x.out, alt.decomposition, exp.value
   return(c(NIE = NIE, NDE = NDE))
 }
 
-
 boot.multi.def = function(data, indices, med.formula, out.formula, med.model.type = "gaussian", out.model.type = "gaussian") {
-  dt<-data[indices, ]
+  return(multi.def(data[indices, ], med.formula, out.formula))
+}
 
-  if (med.model.type == "probit") 
-    med.model <- glm(med.formula, data = dt, family = binomial(link = "probit")) 
-  else 
-    med.model <- glm(med.formula, data = dt) 
-  
-  if (out.model.type == "probit") 
-    out.model <- glm(out.formula, data = dt, family = binomial(link = "probit")) 
-  else 
-    out.model <- glm(out.formula, data = dt) 
+multi.def = function(dt,  med.formula, out.formula) {
+  med.model <- glm(med.formula, data = dt, family = binomial(link = "probit")) 
+  out.model <- glm(out.formula, data = dt, family = binomial(link = "probit")) 
   
   betas = list()
   betas$beta0 = coef(med.model)[1]
@@ -136,22 +130,29 @@ interaction.test.multi.def.boot.multi = function(data, exp.name = "Z", med.name 
   res = boot(data=data[, c(exp.name, med.name, out.name, cov.names)],  # from here we know col. order in df is Z, M, Y, X's...
              statistic=boot.multi.def, R=R, med.formula=med.formula, out.formula=out.formula,
              med.model.type=med.model.type, out.model.type=out.model.type)
-
+  
+  # get an estimate of the true NIE difference under H0. We use outcome model without interaction for this
+  out.formula = paste(out.name, "~", paste(c(exp.name, med.name, cov.names), collapse = "+"), sep = "")
+  est.true.H0.nie.diff = multi.def.no.int(data, med.formula, out.formula)[1]
+  
   centered.dist = res$t[, 1] - mean(res$t[, 1]) # move distr. with the true sample diff
   centered.dist.sample.diff = res$t[, 1] - res$t0[1] # move distr. with the true sample diff
   centered.dist.nonzero = res$t[, 1] - mean(res$t[, 1]) + 0.004277872
+  centered.dist.nonzero.est = res$t[, 1] - mean(res$t[, 1]) + est.true.H0.nie.diff
   centered.dist.sample.diff.nonzero = res$t[, 1] - res$t0[1] + 0.004277872
   
   p.center = min(2*mean(centered.dist <= res$t0[1]), 2*mean(centered.dist >= res$t0[1]))
   p.sample = min(2*mean(centered.dist.sample.diff <= res$t0[1]), 2*mean(centered.dist.sample.diff >= res$t0[1]))
   p.center.nonzero = min(2*mean(centered.dist.nonzero <= res$t0[1]), 2*mean(centered.dist.nonzero >= res$t0[1]))
+  p.center.est.nonzero = min(2*mean(centered.dist.nonzero <= est.true.H0.nie.diff), 2*mean(centered.dist.nonzero >= est.true.H0.nie.diff))
   p.sample.nonzero = min(2*mean(centered.dist.sample.diff.nonzero <= res$t0[1]), 2*mean(centered.dist.sample.diff.nonzero >= res$t0[1]))
   p.conf = min(2*mean(res$t[, 1] <= 0), 2*mean(res$t[, 1] >= 0)) # get p-value
   p.conf.nonzero = min(2*mean(res$t[, 1] <= 0.004277872), 2*mean(res$t[, 1] >= 0.004277872)) # get p-value
+  p.conf.nonzeroest = min(2*mean(res$t[, 1] <= est.true.H0.nie.diff), 2*mean(res$t[, 1] >= est.true.H0.nie.diff)) # get p-value
   diff = res$t0[1]
 
-  result = c(p.center = p.center, p.sample=p.sample, p.center.nonzero= p.center.nonzero, 
-             p.sample.nonzero=p.sample.nonzero, p.conf=p.conf, p.conf.nonzero=p.conf.nonzero, diff=diff)
+  result = c(p.center = p.center, p.sample=p.sample, p.center.nonzero= p.center.nonzero, p.center.est.nonzero=p.center.est.nonzero,
+             p.sample.nonzero=p.sample.nonzero, p.conf=p.conf, p.conf.nonzero=p.conf.nonzero, p.conf.nonzeroest=p.conf.nonzeroest, diff=diff)
   return(result)
 }
 
@@ -189,6 +190,48 @@ interaction.test.multi.def.cc = function(data, exp.name = "Z", med.name = "M", o
   pv = pnorm(abs(diff), mean = 0, sd = sqrt(var.diff), lower.tail = F)*2
   return(c(diff = diff, SE=sqrt(var.diff), p.value = pv))
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+multi.def.no.int = function(dt,  med.formula, out.formula) {
+  med.model <- glm(med.formula, data = dt, family = binomial(link = "probit")) 
+  out.model <- glm(out.formula, data = dt, family = binomial(link = "probit")) 
+  
+  betas = list()
+  betas$beta0 = coef(med.model)[1]
+  betas$beta1 = coef(med.model)[2]
+  betas$beta2 = matrix(data = coef(med.model)[3], ncol = 1, nrow = 1)
+  betas$beta3 = matrix(data = 0, ncol = 1, nrow = 1) # no interactions for Z*X in mediator
+  
+  thetas = list()
+  thetas$theta0 = coef(out.model)[1]
+  thetas$theta1 = coef(out.model)[2]
+  thetas$theta2 = coef(out.model)[3]
+  thetas$theta3 = 0
+  x.indices = !coef(out.model) %in% c(thetas$theta0, thetas$theta1, thetas$theta2) 
+  thetas$theta4 = matrix(coef(out.model)[x.indices], ncol = 1)
+  thetas$theta5 = matrix(data = 0, ncol = 1, nrow = 1)
+  thetas$theta6 = matrix(data = 0, ncol = 1, nrow = 1)
+  thetas$theta7 = matrix(data = 0, ncol = 1, nrow = 1)
+  
+  dt.x = as.matrix(dt[, -c(1:3), drop=F]) # matrix of covariate-values
+  eff1 = effects.bb(betas = betas, thetas = thetas, x.med = dt.x, x.out = dt.x, alt.decomposition = F, exp.value = 1, control.value = 0)
+  eff2 = effects.bb(betas = betas, thetas = thetas, x.med = dt.x, x.out = dt.x, alt.decomposition = T, exp.value = 1, control.value = 0)
+  
+  return(c(NIE.diff = eff1[1]-eff2[1], NDE.diff = eff1[2]-eff2[2]))
+}
+
+
 
 
 

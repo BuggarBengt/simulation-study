@@ -76,3 +76,61 @@ end_time - start_time
 
 
 
+
+
+
+
+
+
+
+
+
+
+n=1000
+b1= 0.04
+b2=-2.70289
+t3=0.06
+
+iter = 10000
+xs = 
+  f1=vector(mode = "numeric", length = iter)
+f2=vector(mode = "numeric", length = iter)
+dif=vector(mode = "numeric", length = iter)
+for (i in 1:iter) {
+  X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
+  xs[i] = mean(X)
+  f1[i] = mean(b1*X+b2)
+  f2[i] = mean(t3*X+b2)
+  dif[i] = f1[i]- f2[i]
+}
+hist(xs)
+hist(f1)
+hist(f2)
+hist(dif)
+shapiro.test(dif[1:500])
+
+
+n=1000
+b1= 0.04
+b2=-2.70289
+t3=0.06
+
+iter = 10000
+xs = 
+  f1=vector(mode = "numeric", length = iter)
+f2=vector(mode = "numeric", length = iter)
+dif=vector(mode = "numeric", length = iter)
+for (i in 1:iter) {
+  X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
+  xs[i] = mean(X)
+  f1[i] = mean(pnorm(b1*X+b2))
+  f2[i] = mean(pnorm(t3*X+b2))
+  dif[i] = f1[i]- f2[i]
+}
+hist(xs)
+hist(f1)
+hist(f2)
+hist(dif)
+shapiro.test(f2[1:500])
+
+

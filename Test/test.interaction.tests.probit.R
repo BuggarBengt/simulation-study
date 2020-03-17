@@ -220,16 +220,17 @@ exp.coefs = c(I = -3.416096, X = 0.036231)
 med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
 out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
 
-iter = 1000
-n    = 1000
+iter = 3000
+n    = 500
 p.center = vector(mode = "numeric", length = iter)
 p.sample = vector(mode = "numeric", length = iter)
 p.center.nonzero = vector(mode = "numeric", length = iter)
+p.center.est.nonzero = vector(mode = "numeric", length = iter)
 p.sample.nonzero = vector(mode = "numeric", length = iter)
 p.conf = vector(mode = "numeric", length = iter)
 p.conf.nonzero = vector(mode = "numeric", length = iter)
+p.conf.nonzeroest = vector(mode = "numeric", length = iter)
 diffs = vector(mode = "numeric", length = iter)
-SEs = vector(mode = "numeric", length = iter)
 set.seed(124)
 start_time = Sys.time()
 for (i in 1:iter) {
@@ -246,10 +247,12 @@ for (i in 1:iter) {
   p.center[i] = def.test.boot[1]
   p.sample[i] = def.test.boot[2]
   p.center.nonzero[i] = def.test.boot[3]
-  p.sample.nonzero[i] = def.test.boot[4]
-  p.conf[i] = def.test.boot[5]
-  p.conf.nonzero[i] = def.test.boot[6]
-  diffs[i] = def.test.boot[7]
+  p.center.est.nonzero[i] = def.test.boot[4]
+  p.sample.nonzero[i] = def.test.boot[5]
+  p.conf[i] = def.test.boot[6]
+  p.conf.nonzero[i] = def.test.boot[7]
+  p.conf.nonzeroest[i] = def.test.boot[8]
+  diffs[i] = def.test.boot[9]
   
   if (i%%10 == 0) {
     print(i/iter) 
@@ -263,18 +266,21 @@ par(mfrow = c(2, 2))
 hist(p.center, breaks = 30)
 hist(p.sample, breaks = 30)
 hist(p.center.nonzero, breaks = 30)
+hist(p.center.est.nonzero, breaks = 30)
 hist(p.sample.nonzero, breaks = 30)
-hist(p.conf, breaks = 10)
-hist(p.conf.nonzero, breaks = 10)
+hist(p.conf, breaks = 30)
+hist(p.conf.nonzero, breaks = 30)
+hist(p.conf.nonzeroest, breaks = 30)
 hist(diffs, breaks = 30)
 
-save(p.center, file = "Data/Data-test-tests/probit.boot.p.values.n.1000.i.1000.R.1000.p.center")
-save(p.sample, file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.p.sample")
-save(p.center.nonzero, file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000.p.center.nonzero")
-save(p.sample.nonzero, file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.p.sample.nonzero")
-save(p.conf, file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000.p.conf")
-save(p.conf.nonzero, file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.p.conf.nonzero")
-save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.diffs")
+save(p.center, file = "Data/Data-test-tests/probit.boot.p.values.n.500.i.3000.R.1000.p.center")
+save(p.sample, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample")
+save(p.center.nonzero, file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.p.center.nonzero")
+save(p.sample.nonzero, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample.nonzero")
+save(p.conf, file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.R.1000.p.conf")
+save(p.conf.nonzero, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzero")
+save(p.conf.nonzeroest, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzeroest")
+save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.diffs")
 
 
 
