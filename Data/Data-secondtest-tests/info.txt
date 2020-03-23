@@ -1,0 +1,2 @@
+s1 = från riksstroke
+s2 = från eget

@@ -7,6 +7,7 @@ iter = 1000
 n    = 1000
 p.center = vector(mode = "numeric", length = iter)
 p.sample = vector(mode = "numeric", length = iter)
+p.true = vector(mode = "numeric", length = iter)
 mean.boot.diffs = vector(mode = "numeric", length = iter)
 true.sample.diffs = vector(mode = "numeric", length = iter)
 set.seed(124)
@@ -23,8 +24,9 @@ for (i in 1:iter) {
   par.boot.res = interaction.test.par.boot(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), R=1000)
   p.center[i] = par.boot.res[1]
   p.sample[i] = par.boot.res[2]
-  mean.boot.diffs[i] = par.boot.res[3]
-  true.sample.diffs[i] = par.boot.res[4]
+  p.true[i] = par.boot.res[3]
+  mean.boot.diffs[i] = par.boot.res[4]
+  true.sample.diffs[i] = par.boot.res[5]
   
   if (i%%10 == 0) {
     print(i/iter) 
@@ -37,6 +39,7 @@ end_time - start_time
 par(mfrow=c(1, 2))
 hist(p.center, breaks = 30)
 hist(p.sample, breaks = 30)
+hist(p.true, breaks = 30)
 hist(mean.boot.diffs, breaks = 30)
 hist(true.sample.diffs, breaks = 30)
 

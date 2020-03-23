@@ -220,8 +220,8 @@ exp.coefs = c(I = -3.416096, X = 0.036231)
 med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
 out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
 
-iter = 3000
-n    = 500
+iter = 2000
+n    = 1000
 p.center = vector(mode = "numeric", length = iter)
 p.sample = vector(mode = "numeric", length = iter)
 p.center.nonzero = vector(mode = "numeric", length = iter)
@@ -242,8 +242,7 @@ for (i in 1:iter) {
   Y.s = out.coefs[1] + out.coefs[2]*Z + out.coefs[3]*M + out.coefs[5]*X + rnorm(n = n, mean = 0, sd = 1)
   Y   = ifelse(Y.s>0, 1, 0)
   data = data.frame(Y, M, Z, X)
-  def.test.boot = interaction.test.multi.def.boot.multi(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), 
-                                                  med.model.type = "probit", out.model.type =  "probit", R=1000)
+  def.test.boot = interaction.test.multi.def.boot.multi(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), R=1000)
   p.center[i] = def.test.boot[1]
   p.sample[i] = def.test.boot[2]
   p.center.nonzero[i] = def.test.boot[3]
@@ -262,7 +261,7 @@ for (i in 1:iter) {
 end_time = Sys.time()
 end_time - start_time
 
-par(mfrow = c(2, 2))
+par(mfrow = c(1, 3))
 hist(p.center, breaks = 30)
 hist(p.sample, breaks = 30)
 hist(p.center.nonzero, breaks = 30)
@@ -282,6 +281,140 @@ save(p.conf.nonzero, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.30
 save(p.conf.nonzeroest, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzeroest")
 save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.diffs")
 
+load(file = "Data/Data-test-tests/probit.boot.p.values.n.500.i.3000.R.1000.p.center")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample")
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.p.center.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.R.1000.p.conf")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzeroest")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.diffs")
+
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000.p.conf")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.p.conf.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.p.conf.nonzeroest")
+
+
+
+
+
+exp.coefs = c(I = -3.416096, X = 0.036231)
+med.coefs = c(I = -1.6507546, Z = 0.2683970, X = 0.0065543, ZX = 0)
+out.coefs = c(I = -3.7220626, Z = 0.2763912, M = 1.4729651, ZM = -0.2583784, X = 0.0283196, ZX = 0, MX = 0, ZMX = 0)
+
+exp.coefs = c(I = -4, X = 0.04)
+med.coefs = c(I = -0.5, Z = 0.5, X = 0.01, ZX = 0)
+out.coefs = c(I = -2, Z = 1, M = 1, ZM = 0, X = 0.02, ZX = 0, MX = 0, ZMX = 0)
+
+iter = 4000
+n    = 500
+diff.nie = vector(mode = "numeric", length = iter)
+NIE.SE = vector(mode = "numeric", length = iter)
+p.NIE = vector(mode = "numeric", length = iter)
+p.NIE.true = vector(mode = "numeric", length = iter)
+p.NIE.est = vector(mode = "numeric", length = iter)
+test.NIE.bca.90 = vector(mode = "numeric", length = iter)
+test.NIE.bca.90.true = vector(mode = "numeric", length = iter)
+test.NIE.bca.90.est = vector(mode = "numeric", length = iter) 
+test.NIE.bca.95 = vector(mode = "numeric", length = iter)
+test.NIE.bca.95.true = vector(mode = "numeric", length = iter)
+test.NIE.bca.95.est = vector(mode = "numeric", length = iter) 
+test.NIE.bca.99 = vector(mode = "numeric", length = iter)
+test.NIE.bca.99.true = vector(mode = "numeric", length = iter)
+test.NIE.bca.99.est = vector(mode = "numeric", length = iter)
+test.NIE.bc.95 = vector(mode = "numeric", length = iter)
+test.NIE.bc.95.true = vector(mode = "numeric", length = iter)
+test.NIE.bc.95.est = vector(mode = "numeric", length = iter)
+
+set.seed(124)
+start_time = Sys.time()
+for (i in 1:iter) {
+  X   = 104 - rgamma(n = n, shape = 8, scale = 4.5)
+  Z.s = exp.coefs[1] + exp.coefs[2]*X + rnorm(n = n, mean = 0, sd = 1)
+  Z   = ifelse(Z.s>0, 1, 0)
+  M.s = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)
+  M   = ifelse(M.s>0, 1, 0)
+  Y.s = out.coefs[1] + out.coefs[2]*Z + out.coefs[3]*M + out.coefs[5]*X + rnorm(n = n, mean = 0, sd = 1)
+  Y   = ifelse(Y.s>0, 1, 0)
+  data = data.frame(Y, M, Z, X)
+  def.test.boot = interaction.test.multi.def.boot.multi(data, exp.name = "Z", med.name = "M", out.name = "Y", cov.names = c("X"), R=1000)
+  diff.nie[i] = def.test.boot[1, 1]
+  NIE.SE[i] = def.test.boot[1, 2]
+  p.NIE[i] = def.test.boot[1, 3]
+  p.NIE.true[i] = def.test.boot[2, 3]
+  p.NIE.est[i] = def.test.boot[3, 3]
+  test.NIE.bca.90[i] = def.test.boot[1, 4]
+  test.NIE.bca.90.true[i] = def.test.boot[2, 4]
+  test.NIE.bca.90.est[i] = def.test.boot[3, 4]
+  test.NIE.bca.95[i] = def.test.boot[1, 5]
+  test.NIE.bca.95.true[i] = def.test.boot[2, 5]
+  test.NIE.bca.95.est[i] = def.test.boot[3, 5]
+  test.NIE.bca.99[i] = def.test.boot[1, 6]
+  test.NIE.bca.99.true[i] = def.test.boot[2, 6]
+  test.NIE.bca.99.est[i] = def.test.boot[3, 6]
+  test.NIE.bc.95[i] = def.test.boot[1, 7]
+  test.NIE.bc.95.true[i] = def.test.boot[2, 7]
+  test.NIE.bc.95.est[i] = def.test.boot[3, 7]
+  
+  if (i%%10 == 0) {
+    print(i/iter) 
+    print(paste("time left: ", (iter-i)/i*(Sys.time()-start_time)))
+  }
+}
+end_time = Sys.time()
+end_time - start_time
+
+par(mfrow = c(1, 3))
+hist(diff.nie, breaks = 30)
+hist(p.NIE, breaks = 30)
+hist(p.NIE.est, breaks = 30)
+hist(p.NIE.true, breaks = 30)
+length(p.NIE[p.NIE>0.1])/length(p.NIE)
+length(p.NIE[p.NIE>0.05])/length(p.NIE)
+length(p.NIE[p.NIE>0.01])/length(p.NIE)
+
+length(p.NIE.true[p.NIE.true>0.1])/length(p.NIE.true)
+length(p.NIE.true[p.NIE.true>0.05])/length(p.NIE.true)
+length(p.NIE.true[p.NIE.true>0.01])/length(p.NIE.true)
+
+length(p.NIE.est[p.NIE.est>0.1])/length(p.NIE.est)
+length(p.NIE.est[p.NIE.est>0.05])/length(p.NIE.est)
+length(p.NIE.est[p.NIE.est>0.01])/length(p.NIE.est)
+
+sum(test.NIE.bca.90)/length(test.NIE.bca.90)
+sum(test.NIE.bca.95)/length(test.NIE.bca.95)
+sum(test.NIE.bca.99)/length(test.NIE.bca.99)
+
+sum(test.NIE.bca.90.true)/length(test.NIE.bca.90.true)
+sum(test.NIE.bca.95.true)/length(test.NIE.bca.95.true)
+sum(test.NIE.bca.99.true)/length(test.NIE.bca.99.true)
+
+sum(test.NIE.bca.90.est)/length(test.NIE.bca.90.est)
+sum(test.NIE.bca.95.est)/length(test.NIE.bca.95.est)
+sum(test.NIE.bca.99.est)/length(test.NIE.bca.99.est)
+
+
+save(p.center, file = "Data/Data-test-tests/probit.boot.p.values.n.500.i.3000.R.1000.p.center")
+save(p.sample, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample")
+save(p.center.nonzero, file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.p.center.nonzero")
+save(p.sample.nonzero, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample.nonzero")
+save(p.conf, file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.R.1000.p.conf")
+save(p.conf.nonzero, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzero")
+save(p.conf.nonzeroest, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzeroest")
+save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.diffs")
+
+load(file = "Data/Data-test-tests/probit.boot.p.values.n.500.i.3000.R.1000.p.center")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample")
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.p.center.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.sample.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.500.i.3000.R.1000.p.conf")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.p.conf.nonzeroest")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000.diffs")
+
+load(file = "Data/Data-test-tests/probit.boot.p.values.p.n.1000.i.1000.R.1000.p.conf")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.p.conf.nonzero")
+load(file = "Data/Data-test-tests/probit.boot.diffs.p.n.1000.i.1000.R.1000.p.conf.nonzeroest")
 
 
 
@@ -289,29 +422,3 @@ save(diffs, file = "Data/Data-test-tests/probit.boot.diffs.p.n.500.i.3000.R.1000
 
 
 
-# test to plot
-X   = rnorm(n = n, mean = 60, 10)
-Z.s = exp.coefs[1] + exp.coefs[2]*X + rnorm(n = n, mean = 0, sd = 1)
-Z   = ifelse(Z.s>0, 1, 0)
-M.s = med.coefs[1] + med.coefs[2]*Z + med.coefs[3]*X + rnorm(n = n, mean = 0, sd = 1)
-M   = ifelse(M.s>0, 1, 0)
-Y.s = out.coefs[1] + out.coefs[2]*Z + out.coefs[3]*M + out.coefs[5]*X + rnorm(n = n, mean = 0, sd = 1)
-Y   = ifelse(Y.s>0, 1, 0)
-data = data.frame(Y, M, Z, X)
-med.model <- glm(M~X+Z, data = data, family = binomial(link = "probit")) 
-out.model <- glm(Y~M+X+Z, data = data, family = binomial(link = "probit")) 
-predicted.data <- as.data.frame(predict(med.model, newdata = data, 
-                                        type="link", se=TRUE))
-new.data <- cbind(data, predicted.data)
-std <- qnorm(0.95 / 2 + 0.5)
-new.data$ymin <- model$family$linkinv(new.data$fit - std * new.data$se)
-new.data$ymax <- model$family$linkinv(new.data$fit + std * new.data$se)
-new.data$fit <- model$family$linkinv(new.data$fit)  # Rescale to 0-1
-
-library(ggplot2)
-# Plot everything
-p <- ggplot(data, aes(x=X, y=Y)) 
-p + geom_point() + 
-  geom_ribbon(data=new.data, aes(y=fit, ymin=ymin, ymax=ymax), alpha=0.5) + 
-  geom_line(data=new.data, aes(y=fit)) + 
-  labs(x="X", y="Y") 

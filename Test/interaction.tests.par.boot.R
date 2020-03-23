@@ -98,7 +98,8 @@ interaction.test.par.boot = function(data, exp.name = "Z", med.name = "M", out.n
   
   p.center = min(2*mean(nie.diff <= 0), 2*mean(nie.diff >= 0))
   p.sample = min(2*mean(nie.diff <= est.true.h0), 2*mean(nie.diff >= est.true.h0))
-  return(c(p.center, p.sample, mean(nie.diff), est.true.h0))
+  p.true = min(2*mean(nie.diff <= 0.004277872), 2*mean(nie.diff >= 0.004277872))
+  return(c(p.center, p.sample, p.true, mean(nie.diff), est.true.h0))
 }
 
 
